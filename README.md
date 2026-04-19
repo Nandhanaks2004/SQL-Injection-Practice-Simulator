@@ -89,7 +89,3 @@ All vulnerabilities are simulated in a controlled environment using mock data. T
 ## Contribution
 
 Contributions are welcome. Improvements to simulations, UI, or learning flow are encouraged.
-
-## License
-
-Add an appropriate open-source license (such as MIT) if you plan to share or distribute this project publicly.
