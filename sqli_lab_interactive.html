@@ -1,0 +1,808 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.lab{background:#0d1117;color:#c9d1d9;min-height:100vh;border-radius:var(--border-radius-lg);font-family:var(--font-sans)}
+.hero{background:#0d1117;border-bottom:1px solid #21262d;padding:1.5rem 2rem 1rem;text-align:center}
+.hero h1{font-size:19px;font-weight:500;color:#f85149;font-family:var(--font-mono);margin-bottom:4px}
+.hero p{font-size:12px;color:#8b949e}
+.nav{display:flex;overflow-x:auto;gap:2px;padding:0 1rem;background:#161b22;border-bottom:1px solid #21262d}
+.nav-btn{padding:9px 12px;font-size:10px;color:#8b949e;background:none;border:none;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;font-family:var(--font-mono);transition:color 0.2s}
+.nav-btn:hover{color:#c9d1d9}
+.nav-btn.active{color:#f85149;border-bottom-color:#f85149}
+.section{display:none;padding:1.5rem 2rem;animation:fi 0.3s ease}
+.section.active{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.stag{font-size:10px;color:#f85149;font-family:var(--font-mono);margin-bottom:3px}
+.stitle{font-size:17px;font-weight:500;color:#e6edf3;margin-bottom:3px}
+.ssub{font-size:12px;color:#8b949e;margin-bottom:1.5rem;line-height:1.6}
+.box{background:#161b22;border:1px solid #21262d;border-radius:8px;padding:1.25rem;margin-bottom:1rem}
+.box.hl{border-color:#58a6ff33;background:#0c1929}
+.box.warn{border-color:#f0883e55;background:#1a0f00}
+.box.danger{border-color:#f8514933;background:#1a0000}
+.box.success{border-color:#3fb95033;background:#001a08}
+.btitle{font-size:11px;font-weight:500;font-family:var(--font-mono);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;color:#8b949e}
+.btitle.blue{color:#58a6ff}
+.btitle.red{color:#f85149}
+.btitle.green{color:#3fb950}
+.btitle.amber{color:#e3b341}
+.bbody{font-size:13px;color:#c9d1d9;line-height:1.7}
+.term{background:#010409;border:1px solid #21262d;border-radius:8px;padding:1rem;font-family:var(--font-mono);font-size:12px;line-height:1.9;margin:8px 0;white-space:pre-wrap;word-break:break-all}
+.kw{color:#ff7b72}
+.col{color:#79c0ff}
+.str{color:#a8ff87}
+.num{color:#f2cc60}
+.cmt{color:#484f58}
+.ok{color:#3fb950}
+.err{color:#f85149}
+.warn-c{color:#e3b341}
+.inj{color:#f85149;background:#1a000088;border-radius:2px;padding:0 2px}
+.orig{color:#79c0ff}
+.db-table{width:100%;border-collapse:collapse;font-size:12px;font-family:var(--font-mono)}
+.db-table th{background:#21262d;color:#8b949e;padding:7px 12px;text-align:left;font-weight:500;border:1px solid #30363d}
+.db-table td{padding:7px 12px;border:1px solid #21262d;color:#c9d1d9;transition:background 0.3s}
+.db-table tr.matched td{background:#0c192988;color:#58a6ff}
+.db-table tr.highlighted td{background:#1a000088;color:#f85149}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+.lab-input{background:#010409;border:1px solid #30363d;border-radius:6px;padding:8px 12px;font-size:12px;color:#c9d1d9;font-family:var(--font-mono);width:100%;outline:none;transition:border-color 0.2s}
+.lab-input:focus{border-color:#58a6ff}
+.lab-input.injected{border-color:#f8514966;background:#0d0000}
+.sim-btn{background:#21262d;border:1px solid #30363d;border-radius:6px;padding:7px 14px;font-size:11px;color:#c9d1d9;cursor:pointer;font-family:var(--font-mono);transition:all 0.2s;margin:3px 3px 3px 0}
+.sim-btn:hover{background:#30363d;border-color:#58a6ff;color:#58a6ff}
+.sim-btn.red{border-color:#f8514933;color:#f85149}
+.sim-btn.red:hover{background:#1a0000;border-color:#f85149}
+.sim-btn.green{border-color:#3fb95033;color:#3fb950}
+.sim-btn.green:hover{background:#001a08;border-color:#3fb950}
+.sim-out{background:#010409;border:1px solid #21262d;border-radius:6px;padding:1rem;font-family:var(--font-mono);font-size:12px;min-height:50px;line-height:1.8;margin-top:8px;transition:all 0.3s}
+.flow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:10px 0}
+.fnode{background:#21262d;border:1px solid #30363d;border-radius:6px;padding:5px 12px;font-size:11px;font-family:var(--font-mono);white-space:nowrap}
+.fnode.blue{background:#0c1929;border-color:#58a6ff;color:#58a6ff}
+.fnode.red{background:#1a0000;border-color:#f85149;color:#f85149}
+.fnode.green{background:#001a08;border-color:#3fb950;color:#3fb950}
+.farr{color:#30363d;font-size:14px}
+.badge{display:inline-block;padding:1px 7px;border-radius:3px;font-size:10px;font-family:var(--font-mono);margin:1px}
+.b-red{background:#1a0000;border:1px solid #f8514933;color:#f85149}
+.b-green{background:#001a08;border:1px solid #3fb95033;color:#3fb950}
+.b-blue{background:#0c1929;border:1px solid #58a6ff33;color:#58a6ff}
+.b-amber{background:#1a0f00;border:1px solid #e3b34133;color:#e3b341}
+.prog-bar{background:#21262d;border-radius:4px;height:3px;margin-bottom:1rem;overflow:hidden}
+.prog-fill{height:100%;background:#f85149;border-radius:4px;transition:width 0.4s}
+.nav-footer{display:flex;justify-content:space-between;padding:1rem 2rem;border-top:1px solid #21262d;background:#0d1117}
+.nav-footer button{background:#21262d;border:1px solid #30363d;border-radius:6px;padding:7px 14px;font-size:11px;color:#c9d1d9;cursor:pointer;font-family:var(--font-mono)}
+.nav-footer button:hover{background:#30363d}
+.sec-ind{font-size:10px;color:#484f58;font-family:var(--font-mono);align-self:center}
+.lq{display:flex;gap:1rem;margin:8px 0;align-items:flex-start}
+.lq-label{font-size:10px;color:#484f58;font-family:var(--font-mono);white-space:nowrap;padding-top:2px;min-width:50px}
+.attack-tab-btns{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:1rem}
+.atab{padding:6px 12px;font-size:10px;background:#21262d;border:1px solid #30363d;border-radius:4px;color:#8b949e;cursor:pointer;font-family:var(--font-mono);transition:all 0.2s}
+.atab.active{background:#1a0000;border-color:#f85149;color:#f85149}
+.attack-panel{display:none}
+.attack-panel.active{display:block}
+.steps{list-style:none}
+.steps li{padding:5px 0;font-size:12px;color:#c9d1d9;display:flex;gap:8px;align-items:flex-start;line-height:1.6}
+.steps li::before{content:"›";color:#f85149;font-family:var(--font-mono);flex-shrink:0}
+.code-compare{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.lab-task{font-size:11px;color:#e3b341;font-family:var(--font-mono);margin-bottom:8px}
+.lab-section{background:#161b22;border-radius:8px;padding:1.25rem;margin-bottom:1rem;border:1px solid #21262d}
+</style>
+
+<div class="lab">
+<div class="hero">
+  <h1>// SQL Injection Lab: From Queries to Exploits</h1>
+  <p>Understand How It Works. Break It. Fix It.</p>
+</div>
+
+<div style="padding:0 2rem;padding-top:8px">
+  <div class="prog-bar"><div class="prog-fill" id="prog" style="width:9%"></div></div>
+</div>
+
+<div class="nav" id="mainnav">
+  <button class="nav-btn active" onclick="goto(0)">01. DB Basics</button>
+  <button class="nav-btn" onclick="goto(1)">02. SQL</button>
+  <button class="nav-btn" onclick="goto(2)">03. Web + SQL</button>
+  <button class="nav-btn" onclick="goto(3)">04. CRUD</button>
+  <button class="nav-btn" onclick="goto(4)">05. WHERE</button>
+  <button class="nav-btn" onclick="goto(5)">06. SQLi Basics</button>
+  <button class="nav-btn" onclick="goto(6)">07. Attack Types</button>
+  <button class="nav-btn" onclick="goto(7)">08. Scenarios</button>
+  <button class="nav-btn" onclick="goto(8)">09. Detection</button>
+  <button class="nav-btn" onclick="goto(9)">10. Prevention</button>
+  <button class="nav-btn" onclick="goto(10)">11. Lab</button>
+</div>
+
+<!-- S0: DB BASICS -->
+<div class="section active" id="s0">
+  <div class="stag">// section 01</div>
+  <div class="stitle">Database Fundamentals</div>
+  <div class="ssub">A database organizes application data into tables — like spreadsheets that your app can search and modify.</div>
+
+  <div class="box hl">
+    <div class="btitle blue">the users table</div>
+    <div class="bbody" style="margin-bottom:10px">Click any row to simulate querying it:</div>
+    <table class="db-table" id="users-table">
+      <tr><th>id</th><th>username</th><th>password</th><th>role</th><th>email</th></tr>
+      <tr onclick="selectRow(this,1)" style="cursor:pointer"><td>1</td><td>admin</td><td>admin123</td><td>admin</td><td>admin@corp.com</td></tr>
+      <tr onclick="selectRow(this,2)" style="cursor:pointer"><td>2</td><td>john</td><td>john456</td><td>user</td><td>john@mail.com</td></tr>
+      <tr onclick="selectRow(this,3)" style="cursor:pointer"><td>3</td><td>alice</td><td>ali789</td><td>user</td><td>alice@mail.com</td></tr>
+      <tr onclick="selectRow(this,4)" style="cursor:pointer"><td>4</td><td>bob</td><td>b0bpass</td><td>user</td><td>bob@mail.com</td></tr>
+    </table>
+    <div class="sim-out" id="row-out" style="margin-top:8px"><span style="color:#484f58">Click a row to see the query that returns it...</span></div>
+  </div>
+
+  <div class="box">
+    <div class="btitle">the products table</div>
+    <table class="db-table">
+      <tr><th>id</th><th>name</th><th>price</th><th>visible</th></tr>
+      <tr><td>1</td><td>Basic Plan</td><td>$9</td><td>1 (public)</td></tr>
+      <tr><td>2</td><td>Pro Plan</td><td>$49</td><td>1 (public)</td></tr>
+      <tr><td>3</td><td>Internal Tool</td><td>$0</td><td>0 (hidden)</td></tr>
+    </table>
+    <div class="bbody" style="font-size:12px;margin-top:8px;color:#8b949e">Row 3 is hidden from users. We'll revisit this in section 8 — an attacker can expose it.</div>
+  </div>
+
+  <div class="box">
+    <div class="btitle">key concepts</div>
+    <div class="bbody">A <span style="color:#58a6ff;font-family:var(--font-mono)">table</span> stores data in rows and columns. Each <span style="color:#58a6ff;font-family:var(--font-mono)">row</span> is one record (one user, one product). A <span style="color:#58a6ff;font-family:var(--font-mono)">column</span> is one type of data. Databases can have many tables — all linked together.</div>
+  </div>
+</div>
+
+<!-- S1: SQL -->
+<div class="section" id="s1">
+  <div class="stag">// section 02</div>
+  <div class="stitle">SQL Basics</div>
+  <div class="ssub">SQL (Structured Query Language) is how applications talk to databases. Every login, search, or data load runs SQL behind the scenes.</div>
+
+  <div class="box hl">
+    <div class="btitle blue">try a query</div>
+    <div class="bbody" style="margin-bottom:10px">Select a statement to run against the users table:</div>
+    <button class="sim-btn" onclick="runSQL('all')">SELECT * FROM users</button>
+    <button class="sim-btn" onclick="runSQL('names')">SELECT username FROM users</button>
+    <button class="sim-btn" onclick="runSQL('admin')">SELECT * WHERE role='admin'</button>
+    <button class="sim-btn" onclick="runSQL('count')">SELECT COUNT(*)</button>
+    <div class="sim-out" id="sql-out"><span style="color:#484f58">Click a query to run it...</span></div>
+  </div>
+
+  <div class="box">
+    <div class="btitle">SQL structure</div>
+    <div class="term"><span class="kw">SELECT</span>  <span class="cmt">-- what columns to return</span>
+<span class="kw">FROM</span>    <span class="cmt">-- which table</span>
+<span class="kw">WHERE</span>   <span class="cmt">-- which rows match</span>
+<span class="kw">ORDER</span>   <span class="cmt">-- sort results</span>
+<span class="kw">LIMIT</span>   <span class="cmt">-- cap number of results</span></div>
+  </div>
+
+  <div class="grid2">
+    <div class="box">
+      <div class="btitle amber">string values use quotes</div>
+      <div class="term"><span class="kw">SELECT</span> * <span class="kw">FROM</span> users
+<span class="kw">WHERE</span> username = <span class="str">'admin'</span></div>
+      <div class="bbody" style="font-size:12px;margin-top:6px;color:#8b949e">Text values (strings) are wrapped in single quotes. Numbers are not.</div>
+    </div>
+    <div class="box">
+      <div class="btitle amber">numbers need no quotes</div>
+      <div class="term"><span class="kw">SELECT</span> * <span class="kw">FROM</span> users
+<span class="kw">WHERE</span> id = <span class="num">1</span></div>
+      <div class="bbody" style="font-size:12px;margin-top:6px;color:#8b949e">This distinction matters — it affects how SQLi payloads are crafted.</div>
+    </div>
+  </div>
+</div>
+
+<!-- S2: WEB + SQL -->
+<div class="section" id="s2">
+  <div class="stag">// section 03</div>
+  <div class="stitle">How Web Apps Use SQL</div>
+  <div class="ssub">Every time you type in a login form or search box, the app takes your input and builds a SQL query. Type below and watch it happen.</div>
+
+  <div class="flow">
+    <div class="fnode blue">User Input</div><div class="farr">→</div>
+    <div class="fnode">App Code</div><div class="farr">→</div>
+    <div class="fnode">SQL Query</div><div class="farr">→</div>
+    <div class="fnode green">Database</div><div class="farr">→</div>
+    <div class="fnode">Response</div>
+  </div>
+
+  <div class="box hl">
+    <div class="btitle blue">live query builder</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div>
+        <div style="font-size:10px;color:#8b949e;font-family:var(--font-mono);margin-bottom:4px">username input:</div>
+        <input class="lab-input" id="live-user" placeholder="type here..." oninput="liveQuery()" />
+      </div>
+      <div>
+        <div style="font-size:10px;color:#8b949e;font-family:var(--font-mono);margin-bottom:4px">password input:</div>
+        <input class="lab-input" id="live-pass" placeholder="type here..." oninput="liveQuery()" />
+      </div>
+    </div>
+    <div style="font-size:10px;color:#8b949e;font-family:var(--font-mono);margin-bottom:4px">generated SQL query (updates as you type):</div>
+    <div class="term" id="live-query"><span class="kw">SELECT</span> * <span class="kw">FROM</span> users <span class="kw">WHERE</span> username=<span class="str">''</span> <span class="kw">AND</span> password=<span class="str">''</span></div>
+    <div class="bbody" style="font-size:12px;color:#8b949e;margin-top:4px">Notice how your input is directly placed inside the query string. This is the root cause of SQL injection.</div>
+  </div>
+
+  <div class="box">
+    <div class="btitle red">the vulnerable code behind this</div>
+    <div class="term"><span class="cmt">// python (flask) — VULNERABLE</span>
+username = request.form[<span class="str">'username'</span>]
+password = request.form[<span class="str">'password'</span>]
+query = <span class="str">"SELECT * FROM users WHERE username='"</span> + username + <span class="str">"' AND password='"</span> + password + <span class="str">"'"</span>
+<span class="cmt"># user input pasted directly into SQL string</span></div>
+  </div>
+</div>
+
+<!-- S3: CRUD -->
+<div class="section" id="s3">
+  <div class="stag">// section 04</div>
+  <div class="stitle">Basic SQL Operations (CRUD)</div>
+  <div class="ssub">Four operations cover almost everything a database does: Create, Read, Update, Delete.</div>
+
+  <div class="grid2">
+    <div class="box hl">
+      <div class="btitle blue">SELECT — read data</div>
+      <div class="term"><span class="kw">SELECT</span> * <span class="kw">FROM</span> users;</div>
+      <div class="bbody" style="font-size:12px;margin-top:6px">Returns all rows from the table. Used for logins, searches, loading profiles.</div>
+    </div>
+    <div class="box">
+      <div class="btitle green">INSERT — add data</div>
+      <div class="term"><span class="kw">INSERT INTO</span> users
+(username, password)
+<span class="kw">VALUES</span> (<span class="str">'newuser'</span>, <span class="str">'pass'</span>);</div>
+      <div class="bbody" style="font-size:12px;margin-top:6px">Adds a new row. Used for registration, creating records.</div>
+    </div>
+    <div class="box">
+      <div class="btitle amber">UPDATE — modify data</div>
+      <div class="term"><span class="kw">UPDATE</span> users
+<span class="kw">SET</span> password=<span class="str">'new'</span>
+<span class="kw">WHERE</span> id=<span class="num">2</span>;</div>
+      <div class="bbody" style="font-size:12px;margin-top:6px">Changes existing rows. Used for password changes, profile updates.</div>
+    </div>
+    <div class="box danger">
+      <div class="btitle red">DELETE — remove data</div>
+      <div class="term"><span class="kw">DELETE FROM</span> users
+<span class="kw">WHERE</span> id=<span class="num">3</span>;</div>
+      <div class="bbody" style="font-size:12px;margin-top:6px">Removes rows. An attacker exploiting SQLi can run DELETE on entire tables — devastating.</div>
+    </div>
+  </div>
+
+  <div class="box warn">
+    <div class="btitle amber">what makes DELETE dangerous</div>
+    <div class="term"><span class="cmt">-- if an attacker injects into any query, they could run:</span>
+<span class="kw">DELETE FROM</span> users; <span class="cmt">-- wipes entire table</span>
+<span class="kw">DROP TABLE</span> users; &nbsp;<span class="cmt">-- destroys the table entirely</span></div>
+    <div class="bbody" style="font-size:12px;margin-top:6px">This is why SQLi is a critical severity vulnerability. It's not just reading data — it's full database control.</div>
+  </div>
+</div>
+
+<!-- S4: WHERE -->
+<div class="section" id="s4">
+  <div class="stag">// section 05</div>
+  <div class="stitle">The WHERE Clause</div>
+  <div class="ssub">WHERE controls which rows are returned. It's the filter. Understanding WHERE is essential to understanding SQL Injection.</div>
+
+  <div class="box hl">
+    <div class="btitle blue">interactive WHERE filter</div>
+    <div class="bbody" style="margin-bottom:10px">Type a value to filter the users table. Watch rows highlight based on the condition.</div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+      <span style="font-size:11px;color:#8b949e;font-family:var(--font-mono)">WHERE username =</span>
+      <input class="lab-input" id="where-input" placeholder="admin" oninput="filterWhere()" style="max-width:160px" />
+    </div>
+    <div class="term" id="where-query"><span class="kw">SELECT</span> * <span class="kw">FROM</span> users <span class="kw">WHERE</span> username = <span class="str">''</span>;</div>
+    <table class="db-table" id="where-table" style="margin-top:8px">
+      <tr><th>id</th><th>username</th><th>password</th><th>role</th></tr>
+      <tr id="wr1"><td>1</td><td>admin</td><td>admin123</td><td>admin</td></tr>
+      <tr id="wr2"><td>2</td><td>john</td><td>john456</td><td>user</td></tr>
+      <tr id="wr3"><td>3</td><td>alice</td><td>ali789</td><td>user</td></tr>
+      <tr id="wr4"><td>4</td><td>bob</td><td>b0bpass</td><td>user</td></tr>
+    </table>
+  </div>
+
+  <div class="box">
+    <div class="btitle">common WHERE patterns</div>
+    <div class="term"><span class="kw">WHERE</span> username = <span class="str">'admin'</span>      <span class="cmt">-- exact match</span>
+<span class="kw">WHERE</span> role = <span class="str">'admin'</span>        <span class="cmt">-- filter by role</span>
+<span class="kw">WHERE</span> id = <span class="num">1</span>               <span class="cmt">-- by number</span>
+<span class="kw">WHERE</span> <span class="num">1</span>=<span class="num">1</span>                  <span class="cmt">-- always TRUE (returns all rows)</span>
+<span class="kw">WHERE</span> <span class="num">1</span>=<span class="num">2</span>                  <span class="cmt">-- always FALSE (returns nothing)</span></div>
+    <div class="bbody" style="font-size:12px;margin-top:6px">The <span style="color:#f85149;font-family:var(--font-mono)">1=1</span> trick is the heart of login bypass. We'll use it next.</div>
+  </div>
+</div>
+
+<!-- S5: SQLi BASICS -->
+<div class="section" id="s5">
+  <div class="stag">// section 06</div>
+  <div class="stitle">How SQL Injection Happens</div>
+  <div class="ssub">When user input is placed directly into a SQL string, the user can inject SQL code — changing the query's logic entirely.</div>
+
+  <div class="box hl">
+    <div class="btitle blue">the login bypass — live simulation</div>
+    <div class="bbody" style="margin-bottom:10px">Type in the username field. Then try the attack payload. Watch the query change.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div>
+        <div style="font-size:10px;color:#8b949e;font-family:var(--font-mono);margin-bottom:4px">username:</div>
+        <input class="lab-input" id="inj-user" value="admin" oninput="updateInjQuery()" />
+      </div>
+      <div>
+        <div style="font-size:10px;color:#8b949e;font-family:var(--font-mono);margin-bottom:4px">password:</div>
+        <input class="lab-input" id="inj-pass" value="wrongpassword" oninput="updateInjQuery()" />
+      </div>
+    </div>
+    <div style="font-size:10px;color:#8b949e;font-family:var(--font-mono);margin-bottom:4px">generated query:</div>
+    <div class="term" id="inj-query"></div>
+    <div style="margin-top:8px">
+      <button class="sim-btn red" onclick="setPayload()">Inject: ' OR 1=1 --</button>
+      <button class="sim-btn" onclick="resetPayload()">Reset to Normal</button>
+      <button class="sim-btn green" onclick="submitLogin()">Submit Login</button>
+    </div>
+    <div class="sim-out" id="inj-out"><span style="color:#484f58">Submit the form to see what happens...</span></div>
+  </div>
+
+  <div class="box">
+    <div class="btitle">why ' OR 1=1 -- works</div>
+    <div class="term"><span class="cmt">-- original intended query:</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> users
+<span class="kw">WHERE</span> username=<span class="str">'admin'</span> <span class="kw">AND</span> password=<span class="str">'wrongpassword'</span>
+
+<span class="cmt">-- after injection with: ' OR 1=1 --</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> users
+<span class="kw">WHERE</span> username=<span class="str">''</span> <span class="kw">OR</span> <span class="num">1</span>=<span class="num">1</span> <span class="cmt">-- ' AND password='...'</span>
+<span class="cmt">                   ^^^^^^^^^^^^^ always TRUE</span>
+<span class="cmt">                   everything after -- is a comment</span></div>
+    <div class="grid2" style="margin-top:8px">
+      <div class="box" style="margin-bottom:0">
+        <div class="btitle">the single quote <span style="color:#f85149">'</span></div>
+        <div class="bbody" style="font-size:12px">Closes the username string early. Now the attacker is writing raw SQL, not a string value.</div>
+      </div>
+      <div class="box" style="margin-bottom:0">
+        <div class="btitle">the double dash <span style="color:#f85149">--</span></div>
+        <div class="bbody" style="font-size:12px">Comments out the rest of the query. The password check disappears completely.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S6: ATTACK TYPES -->
+<div class="section" id="s6">
+  <div class="stag">// section 07</div>
+  <div class="stitle">SQL Injection Attack Types</div>
+  <div class="ssub">SQL injection has many forms. Each exploits the vulnerability differently depending on what the attacker wants.</div>
+
+  <div class="attack-tab-btns">
+    <button class="atab active" onclick="showAtk('bypass')">Login Bypass</button>
+    <button class="atab" onclick="showAtk('union')">UNION Extract</button>
+    <button class="atab" onclick="showAtk('error')">Error-Based</button>
+    <button class="atab" onclick="showAtk('blind')">Blind SQLi</button>
+    <button class="atab" onclick="showAtk('time')">Time-Based</button>
+  </div>
+
+  <div class="attack-panel active" id="atk-bypass">
+    <div class="box danger">
+      <div class="btitle red">login bypass</div>
+      <div class="bbody" style="margin-bottom:8px">Goal: authenticate without valid credentials.</div>
+      <div class="term"><span class="cmt">-- payload: ' OR 1=1 --</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> users
+<span class="kw">WHERE</span> username=<span class="str">''</span> <span class="kw">OR</span> <span class="num">1</span>=<span class="num">1</span> <span class="cmt">--'</span> <span class="kw">AND</span> password=<span class="str">''</span></div>
+      <button class="sim-btn red" onclick="simAtk('bypass')">Simulate Attack</button>
+      <div class="sim-out" id="out-bypass"><span style="color:#484f58">Click simulate...</span></div>
+    </div>
+  </div>
+
+  <div class="attack-panel" id="atk-union">
+    <div class="box danger">
+      <div class="btitle red">UNION-based data extraction</div>
+      <div class="bbody" style="margin-bottom:8px">Goal: append a second SELECT to extract data from other tables. UNION requires same number of columns.</div>
+      <div class="term"><span class="cmt">-- original search query (vulnerable):</span>
+<span class="kw">SELECT</span> name, price <span class="kw">FROM</span> products <span class="kw">WHERE</span> name=<span class="str">'tv'</span>
+
+<span class="cmt">-- payload: ' UNION SELECT username, password FROM users --</span>
+<span class="kw">SELECT</span> name, price <span class="kw">FROM</span> products <span class="kw">WHERE</span> name=<span class="str">''</span>
+<span class="kw">UNION</span>
+<span class="kw">SELECT</span> username, password <span class="kw">FROM</span> users <span class="cmt">--</span></div>
+      <button class="sim-btn red" onclick="simAtk('union')">Simulate Attack</button>
+      <div class="sim-out" id="out-union"><span style="color:#484f58">Click simulate...</span></div>
+    </div>
+  </div>
+
+  <div class="attack-panel" id="atk-error">
+    <div class="box danger">
+      <div class="btitle red">error-based SQLi</div>
+      <div class="bbody" style="margin-bottom:8px">Goal: trigger database errors that reveal schema, version, or data. A single quote breaks the query syntax.</div>
+      <div class="term"><span class="cmt">-- attacker inputs a single quote: '</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> users <span class="kw">WHERE</span> username=<span class="str">'<span class="err">'</span></span>
+<span class="cmt">                                            ↑ unclosed string</span></div>
+      <button class="sim-btn red" onclick="simAtk('error')">Simulate Attack</button>
+      <div class="sim-out" id="out-error"><span style="color:#484f58">Click simulate...</span></div>
+    </div>
+  </div>
+
+  <div class="attack-panel" id="atk-blind">
+    <div class="box danger">
+      <div class="btitle red">blind SQLi — boolean-based</div>
+      <div class="bbody" style="margin-bottom:8px">Goal: extract info by observing TRUE vs FALSE responses. No data is returned directly — attacker infers from behavior.</div>
+      <div class="term"><span class="cmt">-- payload A (TRUE): ' OR 1=1 --  → page loads normally</span>
+<span class="cmt">-- payload B (FALSE): ' OR 1=2 -- → page shows "not found"</span>
+<span class="cmt">-- attacker infers: SQLi exists because behavior differs</span></div>
+      <button class="sim-btn red" onclick="simAtk('blind1')">Send OR 1=1 (TRUE)</button>
+      <button class="sim-btn" onclick="simAtk('blind2')">Send OR 1=2 (FALSE)</button>
+      <div class="sim-out" id="out-blind"><span style="color:#484f58">Send both payloads and compare...</span></div>
+    </div>
+  </div>
+
+  <div class="attack-panel" id="atk-time">
+    <div class="box danger">
+      <div class="btitle red">time-based blind SQLi</div>
+      <div class="bbody" style="margin-bottom:8px">Goal: confirm SQLi by making the database pause. If the response is slow, the payload was executed.</div>
+      <div class="term"><span class="cmt">-- payload: ' OR SLEEP(3) --</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> users
+<span class="kw">WHERE</span> username=<span class="str">''</span> <span class="kw">OR</span> SLEEP(<span class="num">3</span>) <span class="cmt">--'</span>
+<span class="cmt">-- database pauses 3 seconds → confirms injection point</span></div>
+      <button class="sim-btn red" onclick="simAtk('time')">Simulate SLEEP(3)</button>
+      <div class="sim-out" id="out-time"><span style="color:#484f58">Click to simulate delay...</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- S7: SCENARIOS -->
+<div class="section" id="s7">
+  <div class="stag">// section 08</div>
+  <div class="stitle">Real-World Scenarios</div>
+  <div class="ssub">See how attackers exploit SQL injection in realistic application contexts.</div>
+
+  <div class="box danger">
+    <div class="btitle red">scenario 1: admin login bypass</div>
+    <div class="bbody" style="margin-bottom:10px">A company's login form is vulnerable. An attacker doesn't know any passwords.</div>
+    <div class="flow">
+      <div class="fnode red">Input: ' OR 1=1 --</div><div class="farr">→</div>
+      <div class="fnode red">Query returns all rows</div><div class="farr">→</div>
+      <div class="fnode red">First row = admin</div><div class="farr">→</div>
+      <div class="fnode red">Admin session granted</div>
+    </div>
+    <button class="sim-btn red" onclick="scenario(1)">Run Scenario</button>
+    <div class="sim-out" id="scen1-out"><span style="color:#484f58">Run to see attacker's view...</span></div>
+  </div>
+
+  <div class="box danger">
+    <div class="btitle red">scenario 2: expose hidden products</div>
+    <div class="bbody" style="margin-bottom:10px">A product search filters by visible=1. Attacker removes the filter condition.</div>
+    <div class="term" style="font-size:11px"><span class="cmt">-- original: only shows public products</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> products <span class="kw">WHERE</span> visible=<span class="num">1</span> <span class="kw">AND</span> name=<span class="str">'[input]'</span>
+
+<span class="cmt">-- after injection: ' OR 1=1 --</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> products <span class="kw">WHERE</span> visible=<span class="num">1</span> <span class="kw">AND</span> name=<span class="str">''</span> <span class="kw">OR</span> <span class="num">1</span>=<span class="num">1</span> <span class="cmt">--</span>
+<span class="cmt">-- OR 1=1 overrides the visible=1 filter → all products shown</span></div>
+    <button class="sim-btn red" onclick="scenario(2)">Run Scenario</button>
+    <div class="sim-out" id="scen2-out"><span style="color:#484f58">Run to see result...</span></div>
+  </div>
+
+  <div class="box danger">
+    <div class="btitle red">scenario 3: database dump via UNION</div>
+    <div class="bbody" style="margin-bottom:10px">Attacker uses UNION to dump the entire users table through a search endpoint.</div>
+    <button class="sim-btn red" onclick="scenario(3)">Simulate DB Dump</button>
+    <div class="sim-out" id="scen3-out"><span style="color:#484f58">Run to see extracted credentials...</span></div>
+  </div>
+
+  <div class="box warn">
+    <div class="btitle amber">attacker mindset</div>
+    <div class="steps">
+      <li>Where does user input go into a SQL query?</li>
+      <li>Can I break the query with a single quote?</li>
+      <li>Can I comment out the rest with --?</li>
+      <li>Can I add OR 1=1 to bypass conditions?</li>
+      <li>Can I UNION another table to extract data?</li>
+      <li>Can I trigger errors that reveal the schema?</li>
+    </div>
+  </div>
+</div>
+
+<!-- S8: DETECTION -->
+<div class="section" id="s8">
+  <div class="stag">// section 09</div>
+  <div class="stitle">Detection Techniques</div>
+  <div class="ssub">Security testers use systematic probing to find SQL injection points. Each probe reveals something about the vulnerability.</div>
+
+  <div class="box hl">
+    <div class="btitle blue">probe simulator</div>
+    <div class="bbody" style="margin-bottom:10px">Send these test payloads and observe how the application responds:</div>
+    <button class="sim-btn" onclick="probe(1)">Probe: ' (single quote)</button>
+    <button class="sim-btn" onclick="probe(2)">Probe: OR 1=1</button>
+    <button class="sim-btn" onclick="probe(3)">Probe: ' OR 1=1 --</button>
+    <button class="sim-btn" onclick="probe(4)">Probe: UNION SELECT</button>
+    <button class="sim-btn" onclick="probe(5)">Probe: SLEEP(3)</button>
+    <div class="sim-out" id="probe-out"><span style="color:#484f58">Send a probe...</span></div>
+  </div>
+
+  <div class="grid2">
+    <div class="box">
+      <div class="btitle">what testers look for</div>
+      <div class="steps">
+        <li>SQL error messages in the response</li>
+        <li>Behavior change between 1=1 and 1=2</li>
+        <li>Time delays from SLEEP() payloads</li>
+        <li>Extra rows appearing in results</li>
+        <li>Application crashes or 500 errors</li>
+      </div>
+    </div>
+    <div class="box">
+      <div class="btitle">automated tools</div>
+      <div class="steps">
+        <li>sqlmap — auto-detects and exploits SQLi</li>
+        <li>Burp Suite — intercepts and modifies requests</li>
+        <li>OWASP ZAP — scans for vulnerabilities</li>
+        <li>Manual testing — most reliable for logic flaws</li>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S9: PREVENTION -->
+<div class="section" id="s9">
+  <div class="stag">// section 10</div>
+  <div class="stitle">Prevention</div>
+  <div class="ssub">Golden Rule: user input must never change query structure. Achieve this with prepared statements.</div>
+
+  <div class="code-compare">
+    <div class="box danger">
+      <div class="btitle red">vulnerable — string concatenation</div>
+      <div class="term" style="font-size:11px"><span class="cmt">// python</span>
+query = <span class="str">"SELECT * FROM users WHERE username='"</span> + username + <span class="str">"'"</span>
+
+<span class="cmt">// php</span>
+$q = <span class="str">"SELECT * FROM users WHERE username='"</span>.$input.<span class="str">"'"</span>;
+
+<span class="cmt">// node.js</span>
+db.query(<span class="str">`SELECT * FROM users WHERE username='${input}'`</span>)</div>
+      <div class="bbody" style="font-size:11px;color:#f85149;margin-top:6px">Input goes directly into the SQL string. Fatal.</div>
+    </div>
+    <div class="box success">
+      <div class="btitle green">secure — prepared statements</div>
+      <div class="term" style="font-size:11px"><span class="cmt">// python (parameterized)</span>
+cursor.execute(<span class="str">"SELECT * FROM users WHERE username=?"</span>, (username,))
+
+<span class="cmt">// php (PDO)</span>
+$stmt = $pdo->prepare(<span class="str">"SELECT * FROM users WHERE username=?"</span>);
+$stmt->execute([$input]);
+
+<span class="cmt">// node.js</span>
+db.query(<span class="str">"SELECT * FROM users WHERE username=?"</span>, [input])</div>
+      <div class="bbody" style="font-size:11px;color:#3fb950;margin-top:6px">Input is always treated as data — never as SQL.</div>
+    </div>
+  </div>
+
+  <div class="box">
+    <div class="btitle">why prepared statements work</div>
+    <div class="term"><span class="cmt">-- what the DB sees with prepared statements:</span>
+<span class="cmt">-- query template sent first (SQL structure fixed):</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> users <span class="kw">WHERE</span> username=<span class="str">?</span>
+
+<span class="cmt">-- user input sent separately as a parameter (data only):</span>
+parameter: <span class="str">"' OR 1=1 --"</span>  <span class="cmt">← treated as a literal string, not SQL</span>
+
+<span class="cmt">-- the DB looks for a username literally equal to: ' OR 1=1 --</span>
+<span class="cmt">-- no user with that name exists → login fails safely</span></div>
+  </div>
+
+  <div class="box">
+    <div class="btitle">defence in depth</div>
+    <div class="steps">
+      <li><strong style="color:#e6edf3">Prepared statements</strong> — primary defence. Non-negotiable.</li>
+      <li><strong style="color:#e6edf3">Least privilege</strong> — DB user should only have SELECT/INSERT, never DROP.</li>
+      <li><strong style="color:#e6edf3">Input validation</strong> — reject unexpected characters on the server side.</li>
+      <li><strong style="color:#e6edf3">Error handling</strong> — never show raw SQL errors to users. Log them server-side.</li>
+      <li><strong style="color:#e6edf3">WAF</strong> — Web Application Firewall as an additional layer, not a replacement.</li>
+    </div>
+  </div>
+</div>
+
+<!-- S10: LAB -->
+<div class="section" id="s10">
+  <div class="stag">// section 11</div>
+  <div class="stitle">Final Hands-On Lab</div>
+  <div class="ssub">Apply everything you've learned. Three vulnerable endpoints. Four tasks.</div>
+
+  <div class="lab-section">
+    <div class="lab-task">TASK 1: Bypass the login form — gain access without a valid password</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div>
+        <div style="font-size:10px;color:#8b949e;font-family:var(--font-mono);margin-bottom:4px">username:</div>
+        <input class="lab-input" id="lt1u" placeholder="try a payload..." />
+      </div>
+      <div>
+        <div style="font-size:10px;color:#8b949e;font-family:var(--font-mono);margin-bottom:4px">password:</div>
+        <input class="lab-input" id="lt1p" placeholder="anything" />
+      </div>
+    </div>
+    <div class="term" id="lt1q" style="font-size:11px;margin-bottom:8px"></div>
+    <input class="lab-input" id="lt1u" style="display:none" />
+    <button class="sim-btn" onclick="labTask1()">Submit Login</button>
+    <div class="sim-out" id="lt1-out"><span style="color:#484f58">Hint: close the string with ' then make the condition always true...</span></div>
+  </div>
+
+  <div class="lab-section">
+    <div class="lab-task">TASK 2: Expose hidden products — find the item with visible=0</div>
+    <div style="font-size:10px;color:#8b949e;font-family:var(--font-mono);margin-bottom:4px">product search:</div>
+    <input class="lab-input" id="lt2" placeholder="search for a product..." oninput="lt2Query()" />
+    <div class="term" id="lt2q" style="font-size:11px;margin:8px 0"></div>
+    <button class="sim-btn" onclick="labTask2()">Search</button>
+    <div class="sim-out" id="lt2-out"><span style="color:#484f58">Hint: use OR 1=1 to bypass the visible=1 filter...</span></div>
+  </div>
+
+  <div class="lab-section">
+    <div class="lab-task">TASK 3: Trigger an SQL error — confirm the injection point exists</div>
+    <div style="font-size:10px;color:#8b949e;font-family:var(--font-mono);margin-bottom:4px">username:</div>
+    <input class="lab-input" id="lt3" placeholder="enter a payload that breaks syntax..." />
+    <button class="sim-btn" onclick="labTask3()">Submit</button>
+    <div class="sim-out" id="lt3-out"><span style="color:#484f58">Hint: a single quote ( ' ) is all you need...</span></div>
+  </div>
+
+  <div class="lab-section">
+    <div class="lab-task">TASK 4: Identify the fix — what would prevent this vulnerability?</div>
+    <div class="bbody" style="font-size:12px;margin-bottom:10px">The vulnerable login code is:<br>
+    <span style="font-family:var(--font-mono);color:#f85149;font-size:11px">query = "SELECT * FROM users WHERE username='" + username + "'"</span><br><br>
+    What is the name of the technique that fixes this?</div>
+    <input class="lab-input" id="lt4" placeholder="Name the prevention technique..." />
+    <button class="sim-btn" onclick="labTask4()">Check Answer</button>
+    <div class="sim-out" id="lt4-out"><span style="color:#484f58">Enter your answer...</span></div>
+  </div>
+
+  <div id="lab-done" style="display:none" class="box success">
+    <div class="btitle green">lab complete</div>
+    <div class="bbody">You've successfully bypassed authentication, exposed hidden data, triggered SQL errors, and identified the prevention technique. You now understand SQL Injection from both attacker and defender perspectives.</div>
+  </div>
+</div>
+
+<div class="nav-footer">
+  <button onclick="prev()">← Previous</button>
+  <div class="sec-ind" id="sind">section 1 of 11</div>
+  <button onclick="next()">Next →</button>
+</div>
+</div>
+
+<script>
+let cur=0,done=[false,false,false,false];
+const secs=document.querySelectorAll('.section');
+const nbs=document.querySelectorAll('.nav-btn');
+function goto(n){secs[cur].classList.remove('active');nbs[cur].classList.remove('active');cur=n;secs[n].classList.add('active');nbs[n].classList.add('active');document.getElementById('prog').style.width=((n+1)/11*100)+'%';document.getElementById('sind').textContent='section '+(n+1)+' of 11';}
+function next(){if(cur<10)goto(cur+1);}
+function prev(){if(cur>0)goto(cur-1);}
+
+function selectRow(tr,id){
+  document.querySelectorAll('#users-table tr').forEach(r=>r.className='');
+  tr.classList.add('matched');
+  document.getElementById('row-out').innerHTML='<span class="kw">SELECT</span> * <span class="kw">FROM</span> users <span class="kw">WHERE</span> id=<span class="num">'+id+'</span>;<br><span class="ok">→ 1 row returned: '+['','admin / admin123 (role: admin)','john / john456 (role: user)','alice / ali789 (role: user)','bob / b0bpass (role: user)'][id]+'</span>';
+}
+
+function runSQL(t){
+  const o=document.getElementById('sql-out');
+  const rows=['<tr><td>1</td><td>admin</td><td>admin123</td><td>admin</td></tr>','<tr><td>2</td><td>john</td><td>john456</td><td>user</td></tr>','<tr><td>3</td><td>alice</td><td>ali789</td><td>user</td></tr>','<tr><td>4</td><td>bob</td><td>b0bpass</td><td>user</td></tr>'];
+  if(t==='all')o.innerHTML='<span class="ok">→ 4 rows returned</span><br><table class="db-table" style="margin-top:6px"><tr><th>id</th><th>username</th><th>password</th><th>role</th></tr>'+rows.join('')+'</table>';
+  else if(t==='names')o.innerHTML='<span class="ok">→ 4 rows returned (username column only)</span><br><table class="db-table" style="margin-top:6px"><tr><th>username</th></tr><tr><td>admin</td></tr><tr><td>john</td></tr><tr><td>alice</td></tr><tr><td>bob</td></tr></table>';
+  else if(t==='admin')o.innerHTML='<span class="ok">→ 1 row returned</span><br><table class="db-table" style="margin-top:6px"><tr><th>id</th><th>username</th><th>password</th><th>role</th></tr><tr><td>1</td><td>admin</td><td>admin123</td><td>admin</td></tr></table>';
+  else if(t==='count')o.innerHTML='<span class="ok">→ 1 row returned</span><br><table class="db-table" style="margin-top:6px"><tr><th>COUNT(*)</th></tr><tr><td>4</td></tr></table>';
+}
+
+function liveQuery(){
+  const u=document.getElementById('live-user').value||'';
+  const p=document.getElementById('live-pass').value||'';
+  const esc=s=>s.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  document.getElementById('live-query').innerHTML='<span class="kw">SELECT</span> * <span class="kw">FROM</span> users <span class="kw">WHERE</span> username=<span class="str">\''+esc(u)+'\'</span> <span class="kw">AND</span> password=<span class="str">\''+esc(p)+'\'</span>';
+}
+
+function filterWhere(){
+  const v=document.getElementById('where-input').value.toLowerCase().trim();
+  const names=['admin','john','alice','bob'];
+  const esc=s=>s.replace(/</g,'&lt;');
+  document.getElementById('where-query').innerHTML='<span class="kw">SELECT</span> * <span class="kw">FROM</span> users <span class="kw">WHERE</span> username = <span class="str">\''+esc(v)+'\'</span>;';
+  names.forEach((n,i)=>{const row=document.getElementById('wr'+(i+1));row.className=(!v||n===v)?'matched':'';});
+}
+
+function updateInjQuery(){
+  const u=document.getElementById('inj-user').value||'';
+  const p=document.getElementById('inj-pass').value||'';
+  const esc=s=>s.replace(/</g,'&lt;');
+  const hasInj=u.includes("'")&&u.includes('--');
+  let q;
+  if(hasInj){
+    const ui=esc(u).replace(/'/g,"<span class='inj'>'</span>").replace(/OR 1=1/gi,"<span class='inj'>OR 1=1</span>").replace(/--/g,"<span class='inj'>--</span>");
+    q='<span class="kw">SELECT</span> * <span class="kw">FROM</span> users <span class="kw">WHERE</span> username=<span class="str">\''+ui+'</span> <span class="cmt" style="color:#484f58"> AND password=\''+esc(p)+'\'</span>';
+  } else {
+    q='<span class="kw">SELECT</span> * <span class="kw">FROM</span> users <span class="kw">WHERE</span> username=<span class="str">\''+esc(u)+'\'</span> <span class="kw">AND</span> password=<span class="str">\''+esc(p)+'\'</span>';
+  }
+  document.getElementById('inj-query').innerHTML=q;
+  document.getElementById('inj-user').className='lab-input'+(hasInj?' injected':'');
+}
+function setPayload(){document.getElementById('inj-user').value="' OR 1=1 --";document.getElementById('inj-pass').value="anything";updateInjQuery();}
+function resetPayload(){document.getElementById('inj-user').value="admin";document.getElementById('inj-pass').value="wrongpassword";updateInjQuery();}
+function submitLogin(){
+  const u=document.getElementById('inj-user').value||'';
+  const o=document.getElementById('inj-out');
+  if(u.toLowerCase().includes("or 1=1")||u.toLowerCase().includes("or '1'='1")){
+    o.innerHTML='<span class="err">ATTACK SUCCESS — LOGIN BYPASSED</span><br><span class="warn-c">Logged in as: admin (row 1 returned by OR 1=1)</span><br><span style="color:#484f58">Full admin access granted. No password required.</span>';
+  } else if(u==='admin'){
+    o.innerHTML='<span class="err">Login failed — wrong password</span><br><span style="color:#484f58">Normal authentication. "wrongpassword" does not match "admin123".</span>';
+  } else {
+    o.innerHTML='<span class="err">Login failed — user not found or wrong password</span>';
+  }
+}
+
+function showAtk(t){
+  document.querySelectorAll('.attack-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.atab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('atk-'+t).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function simAtk(t){
+  const outs={bypass:'out-bypass',union:'out-union',error:'out-error',blind1:'out-blind',blind2:'out-blind',time:'out-time'};
+  const o=document.getElementById(outs[t]);
+  if(t==='bypass')o.innerHTML='<span class="err">LOGIN BYPASS SUCCESS</span><br><span class="warn-c">All 4 users returned. First row (admin) used for session.</span><br><table class="db-table" style="margin-top:6px"><tr><th>id</th><th>username</th><th>role</th></tr><tr class="highlighted"><td>1</td><td>admin</td><td>admin</td></tr><tr><td>2</td><td>john</td><td>user</td></tr></table>';
+  else if(t==='union')o.innerHTML='<span class="err">DATA EXTRACTED via UNION</span><br><span class="warn-c">Users table dumped through search endpoint:</span><br><table class="db-table" style="margin-top:6px"><tr><th>name (from products)</th><th>price (from products)</th></tr><tr class="highlighted"><td>admin</td><td>admin123</td></tr><tr class="highlighted"><td>john</td><td>john456</td></tr><tr class="highlighted"><td>alice</td><td>ali789</td></tr><tr class="highlighted"><td>bob</td><td>b0bpass</td></tr></table>';
+  else if(t==='error')o.innerHTML='<span class="err">SQL ERROR EXPOSED:</span><br><span class="err">ERROR 1064 (42000): You have an error in your SQL syntax;</span><br><span class="err">check the manual that corresponds to your MySQL server version</span><br><span class="err">for the right syntax to use near \'\'\'</span> at line 1<br><span class="warn-c">Confirmed: input goes into SQL. Injection point found.</span>';
+  else if(t==='blind1')o.innerHTML='<span class="ok">TRUE PAYLOAD response:</span><br><span class="ok">→ Page loads normally. User profile displayed.</span><br><span style="color:#484f58">OR 1=1 is always true → query returns rows → app shows content</span>';
+  else if(t==='blind2')o.innerHTML='<span class="err">FALSE PAYLOAD response:</span><br><span class="err">→ Page shows "User not found." or empty result.</span><br><span style="color:#484f58">OR 1=2 is always false → no rows → app shows nothing</span><br><span class="warn-c">Behavior difference confirms SQLi exists!</span>';
+  else if(t==='time'){
+    o.innerHTML='<span class="warn-c">⏳ Sending payload... waiting for response...</span>';
+    setTimeout(()=>{o.innerHTML='<span class="err">Response received after 3 seconds.</span><br><span class="warn-c">Database executed SLEEP(3). This confirms injection point.</span><br><span style="color:#484f58">Time-based blind SQLi confirmed. Attacker can now extract data bit-by-bit using conditional delays.</span>';},1500);
+  }
+}
+
+function scenario(n){
+  if(n===1)document.getElementById('scen1-out').innerHTML='<span class="err">ATTACKER VIEW:</span><br><span class="warn-c">Input: \' OR 1=1 --</span><br><span class="err">→ Query returns all users → first row (admin) selected</span><br><span class="err">→ Session created as admin</span><br><span class="err">→ Full dashboard, user data, and settings accessible</span><br><span style="color:#484f58">No password needed. Attack took under 30 seconds.</span>';
+  else if(n===2)document.getElementById('scen2-out').innerHTML='<span class="err">HIDDEN PRODUCTS EXPOSED:</span><br><table class="db-table" style="margin-top:6px"><tr><th>id</th><th>name</th><th>price</th><th>visible</th></tr><tr><td>1</td><td>Basic Plan</td><td>$9</td><td>1</td></tr><tr><td>2</td><td>Pro Plan</td><td>$49</td><td>1</td></tr><tr class="highlighted"><td>3</td><td>Internal Tool</td><td>$0</td><td>0 ← should be hidden</td></tr></table><br><span class="warn-c">OR 1=1 bypassed the visible=1 filter. Internal product now visible.</span>';
+  else document.getElementById('scen3-out').innerHTML='<span class="err">DATABASE DUMP — ALL CREDENTIALS:</span><br><table class="db-table" style="margin-top:6px"><tr><th>username</th><th>password</th></tr><tr class="highlighted"><td>admin</td><td>admin123</td></tr><tr class="highlighted"><td>john</td><td>john456</td></tr><tr class="highlighted"><td>alice</td><td>ali789</td></tr><tr class="highlighted"><td>bob</td><td>b0bpass</td></tr></table><br><span class="warn-c">UNION appended SELECT to search query. Entire users table extracted.</span>';
+}
+
+function probe(n){
+  const o=document.getElementById('probe-out');
+  const p=['','\'','OR 1=1','` OR 1=1 --','UNION SELECT','SLEEP(3)'];
+  const r=['','<span class="err">SQL ERROR 1064: syntax error near \'\'</span><br><span class="warn-c">Confirmed: input is placed inside SQL string. Injection point found.</span>','<span class="ok">Normal response returned</span><br><span style="color:#484f58">Condition OR 1=1 evaluated. App returned extra data or behaved differently. Possible SQLi.</span>','<span class="err">LOGIN BYPASSED</span><br><span class="warn-c">Query returned all rows. Confirmed SQLi.</span>','<span class="err">ERROR: The used SELECT statements have a different number of columns</span><br><span class="warn-c">Column count error confirms UNION-based SQLi is possible.</span>','<span class="warn-c">Response delayed 3 seconds.</span><br><span class="err">Time-based blind SQLi confirmed. Database executed SLEEP().</span>'];
+  o.innerHTML='<span style="color:#8b949e">Probe: <span class="str">'+p[n]+'</span></span><br>'+r[n];
+}
+
+function lt2Query(){
+  const v=document.getElementById('lt2').value||'';
+  const esc=s=>s.replace(/</g,'&lt;');
+  document.getElementById('lt2q').innerHTML='<span class="kw">SELECT</span> * <span class="kw">FROM</span> products <span class="kw">WHERE</span> visible=<span class="num">1</span> <span class="kw">AND</span> name=<span class="str">\''+esc(v)+'\'</span>';
+}
+
+function labTask1(){
+  const u=(document.getElementById('lt1u').value||'').toLowerCase();
+  const o=document.getElementById('lt1-out');
+  document.getElementById('lt1q').innerHTML='<span class="kw">SELECT</span> * <span class="kw">FROM</span> users <span class="kw">WHERE</span> username=\'<span class="inj">'+(document.getElementById('lt1u').value||'')+'</span>\' AND password=\'...'
+  if(u.includes("or 1=1")||u.includes("or '1'='1")||u.includes("or 1 =1")||u.includes("' or")){
+    o.innerHTML='<span class="ok">TASK 1 COMPLETE!</span><br><span class="err">Login bypassed. Logged in as: admin</span><br><span style="color:#484f58">The \' closed the string, OR 1=1 made the condition always true, -- commented out the rest.</span>';
+    done[0]=true;checkDone();
+  } else if(u==='admin'){
+    o.innerHTML='<span class="err">Login failed — wrong password</span><br><span style="color:#484f58">Hint: try injecting into the username field. Close the string with \' and add a condition...</span>';
+  } else {
+    o.innerHTML='<span class="err">Login failed</span><br><span style="color:#484f58">Hint: use \' OR 1=1 -- in the username field.</span>';
+  }
+}
+function labTask2(){
+  const v=(document.getElementById('lt2').value||'').toLowerCase();
+  const o=document.getElementById('lt2-out');
+  if(v.includes("or 1=1")||v.includes("' or")){
+    o.innerHTML='<span class="ok">TASK 2 COMPLETE!</span><br><span class="err">Hidden product exposed:</span><br><table class="db-table" style="margin-top:6px"><tr><th>id</th><th>name</th><th>price</th><th>visible</th></tr><tr><td>1</td><td>Basic Plan</td><td>$9</td><td>1</td></tr><tr><td>2</td><td>Pro Plan</td><td>$49</td><td>1</td></tr><tr class="highlighted"><td>3</td><td>Internal Tool</td><td>$0</td><td>0 (was hidden!)</td></tr></table>';
+    done[1]=true;checkDone();
+  } else {
+    o.innerHTML='<span class="err">No injection detected</span><br><span style="color:#484f58">Hint: close the string with \' then add OR 1=1 -- to bypass the filter.</span>';
+  }
+}
+function labTask3(){
+  const v=document.getElementById('lt3').value||'';
+  const o=document.getElementById('lt3-out');
+  if(v.includes("'")){
+    o.innerHTML='<span class="ok">TASK 3 COMPLETE!</span><br><span class="err">SQL ERROR 1064: You have an error in your SQL syntax.</span><br><span class="warn-c">The single quote broke the SQL syntax — injection point confirmed.</span><br><span style="color:#484f58">This is how testers verify a vulnerability exists before deeper exploitation.</span>';
+    done[2]=true;checkDone();
+  } else {
+    o.innerHTML='<span style="color:#484f58">No error triggered. Hint: what character breaks string syntax in SQL?</span>';
+  }
+}
+function labTask4(){
+  const v=(document.getElementById('lt4').value||'').toLowerCase();
+  const o=document.getElementById('lt4-out');
+  if(v.includes('prepared')||v.includes('parameterized')||v.includes('parametrized')||v.includes('parameterised')){
+    o.innerHTML='<span class="ok">TASK 4 COMPLETE!</span><br><span class="ok">Correct — Prepared Statements (Parameterized Queries)</span><br><span style="color:#484f58">The query template is compiled first, then user input is passed separately as data. Input can never become SQL code.</span>';
+    done[3]=true;checkDone();
+  } else {
+    o.innerHTML='<span style="color:#484f58">Not quite. Think about how to separate SQL structure from user input. The technique involves "?" placeholders...</span>';
+  }
+}
+function checkDone(){if(done.every(Boolean))document.getElementById('lab-done').style.display='block';}
+updateInjQuery();lt2Query();
+</script>
